@@ -51,7 +51,7 @@ public class TaskCacheApplicator {
 
 		boolean upToDate = false;
 
-		String currentDigest = getCurrentDigest(taskCache);
+		String currentDigest = _getCurrentDigest(taskCache);
 
 		if (logger.isInfoEnabled()) {
 			logger.info("Current digest is {}", currentDigest);
@@ -72,7 +72,7 @@ public class TaskCacheApplicator {
 			}
 		}
 		else {
-			String cachedDigest = getCachedDigest(taskCache);
+			String cachedDigest = _getCachedDigest(taskCache);
 
 			if (logger.isInfoEnabled()) {
 				if (Validator.isNull(cachedDigest)) {
@@ -89,16 +89,16 @@ public class TaskCacheApplicator {
 		}
 
 		if (upToDate) {
-			applyUpToDate(taskCache, task);
+			_applyUpToDate(taskCache, task);
 		}
 		else {
-			applyOutOfDate(taskCache, task, currentDigest);
+			_applyOutOfDate(taskCache, task, currentDigest);
 		}
 
-		createRefreshDigestTask(taskCache);
+		_createRefreshDigestTask(taskCache);
 	}
 
-	protected void applyOutOfDate(
+	private void _applyOutOfDate(
 		final TaskCache taskCache, Task task, final String currentDigest) {
 
 		Logger logger = task.getLogger();
@@ -107,14 +107,14 @@ public class TaskCacheApplicator {
 			logger.info("{} is out-of-date", task);
 		}
 
-		Copy copy = createSaveCacheTask(taskCache);
+		Copy copy = _createSaveCacheTask(taskCache);
 
 		copy.doLast(
 			new Action<Task>() {
 
 				@Override
 				public void execute(Task task) {
-					writeDigestFile(taskCache, currentDigest);
+					_writeDigestFile(taskCache, currentDigest);
 				}
 
 			});
@@ -122,23 +122,23 @@ public class TaskCacheApplicator {
 		task.finalizedBy(copy);
 	}
 
-	protected void applyUpToDate(TaskCache taskCache, Task task) {
+	private void _applyUpToDate(TaskCache taskCache, Task task) {
 		Logger logger = task.getLogger();
 
 		if (logger.isInfoEnabled()) {
 			logger.info("{} is up-to-date", task);
 		}
 
-		removeSkippedTaskDependencies(taskCache, task);
+		_removeSkippedTaskDependencies(taskCache, task);
 
-		Copy copy = createRestoreCacheTask(taskCache);
+		Copy copy = _createRestoreCacheTask(taskCache);
 
 		task.dependsOn(copy);
 
 		task.setEnabled(false);
 	}
 
-	protected Task createRefreshDigestTask(final TaskCache taskCache) {
+	private Task _createRefreshDigestTask(final TaskCache taskCache) {
 		Project project = taskCache.getProject();
 
 		Task task = project.task(taskCache.getRefreshDigestTaskName());
@@ -148,9 +148,9 @@ public class TaskCacheApplicator {
 
 				@Override
 				public void execute(Task task) {
-					String digest = getCurrentDigest(taskCache);
+					String digest = _getCurrentDigest(taskCache);
 
-					writeDigestFile(taskCache, digest);
+					_writeDigestFile(taskCache, digest);
 				}
 
 			});
@@ -160,7 +160,7 @@ public class TaskCacheApplicator {
 		return task;
 	}
 
-	protected Copy createRestoreCacheTask(TaskCache taskCache) {
+	private Copy _createRestoreCacheTask(TaskCache taskCache) {
 		Project project = taskCache.getProject();
 
 		Copy copy = GradleUtil.addTask(
@@ -175,7 +175,7 @@ public class TaskCacheApplicator {
 		return copy;
 	}
 
-	protected Copy createSaveCacheTask(TaskCache taskCache) {
+	private Copy _createSaveCacheTask(TaskCache taskCache) {
 		String taskName = taskCache.getSaveCacheTaskName();
 
 		Copy copy = GradleUtil.addTask(
@@ -192,7 +192,7 @@ public class TaskCacheApplicator {
 		return copy;
 	}
 
-	protected String getCachedDigest(TaskCache taskCache) {
+	private String _getCachedDigest(TaskCache taskCache) {
 		try {
 			File digestFile = new File(
 				taskCache.getCacheDir(), DIGEST_FILE_NAME);
@@ -210,13 +210,13 @@ public class TaskCacheApplicator {
 		}
 	}
 
-	protected String getCurrentDigest(TaskCache taskCache) {
+	private String _getCurrentDigest(TaskCache taskCache) {
 		return FileUtil.getDigest(
 			taskCache.getProject(), taskCache.getTestFiles(),
 			taskCache.isExcludeIgnoredTestFiles());
 	}
 
-	protected void removeSkippedTaskDependencies(
+	private void _removeSkippedTaskDependencies(
 		TaskCache taskCache, Task task) {
 
 		Logger logger = task.getLogger();
@@ -260,7 +260,7 @@ public class TaskCacheApplicator {
 		}
 	}
 
-	protected void writeDigestFile(TaskCache taskCache, String digest) {
+	private void _writeDigestFile(TaskCache taskCache, String digest) {
 		Task task = taskCache.getTask();
 
 		Logger logger = task.getLogger();

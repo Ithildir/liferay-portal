@@ -38,10 +38,10 @@ public class AlloyTaglibPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		GradleUtil.applyPlugin(project, JavaPlugin.class);
 
-		addTaskBuildTaglibs(project);
+		_addTaskBuildTaglibs(project);
 	}
 
-	protected BuildTaglibsTask addTaskBuildTaglibs(Project project) {
+	private BuildTaglibsTask _addTaskBuildTaglibs(Project project) {
 		final BuildTaglibsTask buildTaglibsTask = GradleUtil.addTask(
 			project, BUILD_TAGLIBS_TASK_NAME, BuildTaglibsTask.class);
 

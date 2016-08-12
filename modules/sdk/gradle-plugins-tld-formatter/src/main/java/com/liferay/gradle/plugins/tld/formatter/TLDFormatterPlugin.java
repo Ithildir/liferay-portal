@@ -35,17 +35,15 @@ public class TLDFormatterPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		Configuration tldFormatterConfiguration = addConfigurationTLDFormatter(
+		Configuration tldFormatterConfiguration = _addConfigurationTLDFormatter(
 			project);
 
-		addTaskFormatTLD(project);
+		_addTaskFormatTLD(project);
 
-		configureTasksFormatTLD(project, tldFormatterConfiguration);
+		_configureTasksFormatTLD(project, tldFormatterConfiguration);
 	}
 
-	protected Configuration addConfigurationTLDFormatter(
-		final Project project) {
-
+	private Configuration _addConfigurationTLDFormatter(final Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, CONFIGURATION_NAME);
 
@@ -54,7 +52,7 @@ public class TLDFormatterPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addDependenciesTLDFormatter(project);
+					_addDependenciesTLDFormatter(project);
 				}
 
 			});
@@ -66,13 +64,13 @@ public class TLDFormatterPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addDependenciesTLDFormatter(Project project) {
+	private void _addDependenciesTLDFormatter(Project project) {
 		GradleUtil.addDependency(
 			project, CONFIGURATION_NAME, "com.liferay",
 			"com.liferay.tld.formatter", "latest.release");
 	}
 
-	protected FormatTLDTask addTaskFormatTLD(Project project) {
+	private FormatTLDTask _addTaskFormatTLD(Project project) {
 		FormatTLDTask formatTLDTask = GradleUtil.addTask(
 			project, FORMAT_TLD_TASK_NAME, FormatTLDTask.class);
 
@@ -82,13 +80,13 @@ public class TLDFormatterPlugin implements Plugin<Project> {
 		return formatTLDTask;
 	}
 
-	protected void configureTaskFormatTLDClasspath(
+	private void _configureTaskFormatTLDClasspath(
 		FormatTLDTask formatTLDTask, FileCollection fileCollection) {
 
 		formatTLDTask.setClasspath(fileCollection);
 	}
 
-	protected void configureTasksFormatTLD(
+	private void _configureTasksFormatTLD(
 		Project project, final Configuration tldFormatterConfiguration) {
 
 		TaskContainer taskContainer = project.getTasks();
@@ -99,7 +97,7 @@ public class TLDFormatterPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(FormatTLDTask formatTLDTask) {
-					configureTaskFormatTLDClasspath(
+					_configureTaskFormatTLDClasspath(
 						formatTLDTask, tldFormatterConfiguration);
 				}
 

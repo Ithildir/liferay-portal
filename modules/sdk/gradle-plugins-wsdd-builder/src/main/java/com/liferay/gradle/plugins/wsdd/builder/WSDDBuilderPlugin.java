@@ -48,15 +48,15 @@ public class WSDDBuilderPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		GradleUtil.applyPlugin(project, JavaPlugin.class);
 
-		Configuration wsddBuilderConfiguration = addConfigurationWSDDBuilder(
+		Configuration wsddBuilderConfiguration = _addConfigurationWSDDBuilder(
 			project);
 
-		addTaskBuildWSDD(project);
+		_addTaskBuildWSDD(project);
 
-		configureTasksBuildWSDD(project, wsddBuilderConfiguration);
+		_configureTasksBuildWSDD(project, wsddBuilderConfiguration);
 	}
 
-	protected Configuration addConfigurationWSDDBuilder(final Project project) {
+	private Configuration _addConfigurationWSDDBuilder(final Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, CONFIGURATION_NAME);
 
@@ -65,7 +65,7 @@ public class WSDDBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addDependenciesWSDDBuilder(project);
+					_addDependenciesWSDDBuilder(project);
 				}
 
 			});
@@ -77,13 +77,13 @@ public class WSDDBuilderPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addDependenciesWSDDBuilder(Project project) {
+	private void _addDependenciesWSDDBuilder(Project project) {
 		GradleUtil.addDependency(
 			project, CONFIGURATION_NAME, "com.liferay",
 			"com.liferay.portal.tools.wsdd.builder", "latest.release");
 	}
 
-	protected BuildWSDDTask addTaskBuildWSDD(Project project) {
+	private BuildWSDDTask _addTaskBuildWSDD(Project project) {
 		final BuildWSDDTask buildWSDDTask = GradleUtil.addTask(
 			project, BUILD_WSDD_TASK_NAME, BuildWSDDTask.class);
 
@@ -139,7 +139,7 @@ public class WSDDBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(WarPlugin warPlugin) {
-					configureTaskBuildWSDDForWarPlugin(buildWSDDTask);
+					_configureTaskBuildWSDDForWarPlugin(buildWSDDTask);
 				}
 
 			});
@@ -147,13 +147,13 @@ public class WSDDBuilderPlugin implements Plugin<Project> {
 		return buildWSDDTask;
 	}
 
-	protected void configureTaskBuildWSDDClasspath(
+	private void _configureTaskBuildWSDDClasspath(
 		BuildWSDDTask buildWSDDTask, FileCollection fileCollection) {
 
 		buildWSDDTask.setClasspath(fileCollection);
 	}
 
-	protected void configureTaskBuildWSDDForWarPlugin(
+	private void _configureTaskBuildWSDDForWarPlugin(
 		final BuildWSDDTask buildWSDDTask) {
 
 		buildWSDDTask.setInputFile(
@@ -183,7 +183,7 @@ public class WSDDBuilderPlugin implements Plugin<Project> {
 			});
 	}
 
-	protected void configureTasksBuildWSDD(
+	private void _configureTasksBuildWSDD(
 		Project project, final Configuration wsddBuilderCOnfiguration) {
 
 		TaskContainer taskContainer = project.getTasks();
@@ -194,7 +194,7 @@ public class WSDDBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(BuildWSDDTask buildWSDDTask) {
-					configureTaskBuildWSDDClasspath(
+					_configureTaskBuildWSDDClasspath(
 						buildWSDDTask, wsddBuilderCOnfiguration);
 				}
 

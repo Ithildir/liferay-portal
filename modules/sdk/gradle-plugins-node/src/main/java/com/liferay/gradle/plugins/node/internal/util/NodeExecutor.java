@@ -51,14 +51,14 @@ public class NodeExecutor {
 	}
 
 	public void execute() throws Exception {
-		ProcessBuilder processBuilder = new ProcessBuilder(getCommandLine());
+		ProcessBuilder processBuilder = new ProcessBuilder(_getCommandLine());
 
 		File workingDir = getWorkingDir();
 
 		processBuilder.directory(workingDir);
 		processBuilder.inheritIO();
 
-		updateEnvironment(processBuilder.environment());
+		_updateEnvironment(processBuilder.environment());
 
 		if (_logger.isInfoEnabled()) {
 			_logger.info(
@@ -117,25 +117,25 @@ public class NodeExecutor {
 		_workingDir = workingDir;
 	}
 
-	protected List<String> getCommandLine() {
+	private List<String> _getCommandLine() {
 		List<String> commandLine = new ArrayList<>();
 
 		if (OSDetector.isWindows()) {
 			commandLine.add("cmd");
-			commandLine.addAll(getWindowsArgs());
+			commandLine.addAll(_getWindowsArgs());
 		}
 		else {
-			commandLine.add(getExecutable());
+			commandLine.add(_getExecutable());
 			commandLine.addAll(getArgs());
 		}
 
 		return commandLine;
 	}
 
-	protected String getExecutable() {
+	private String _getExecutable() {
 		String executable = GradleUtil.toString(_command);
 
-		File executableDir = getExecutableDir();
+		File executableDir = _getExecutableDir();
 
 		if (executableDir != null) {
 			File executableFile = new File(executableDir, executable);
@@ -146,7 +146,7 @@ public class NodeExecutor {
 		return executable;
 	}
 
-	protected File getExecutableDir() {
+	private File _getExecutableDir() {
 		File nodeDir = getNodeDir();
 
 		if (nodeDir == null) {
@@ -156,7 +156,7 @@ public class NodeExecutor {
 		return new File(nodeDir, "bin");
 	}
 
-	protected List<String> getWindowsArgs() {
+	private List<String> _getWindowsArgs() {
 		List<String> windowsArgs = new ArrayList<>(2);
 
 		windowsArgs.add("/c");
@@ -165,7 +165,7 @@ public class NodeExecutor {
 
 		sb.append('"');
 
-		String executable = getExecutable();
+		String executable = _getExecutable();
 
 		if (executable.indexOf(File.separatorChar) == -1) {
 			sb.append(executable);
@@ -193,8 +193,8 @@ public class NodeExecutor {
 		return windowsArgs;
 	}
 
-	protected void updateEnvironment(Map<String, String> environment) {
-		File executableDir = getExecutableDir();
+	private void _updateEnvironment(Map<String, String> environment) {
+		File executableDir = _getExecutableDir();
 
 		if (executableDir == null) {
 			return;

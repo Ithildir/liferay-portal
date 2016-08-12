@@ -61,7 +61,7 @@ public abstract class BaseMergeTask extends DefaultTask {
 		Project project = getProject();
 
 		for (File sourceDir : getSourceDirs()) {
-			for (File sourceFile : getSourceFiles(sourceDir)) {
+			for (File sourceFile : _getSourceFiles(sourceDir)) {
 				String fileName = FileUtil.relativize(sourceFile, sourceDir);
 
 				File destinationFile = new File(destinationDir, fileName);
@@ -89,7 +89,7 @@ public abstract class BaseMergeTask extends DefaultTask {
 		Project project = getProject();
 
 		for (File sourceDir : getSourceDirs()) {
-			FileCollection fileCollection = getSourceFiles(sourceDir);
+			FileCollection fileCollection = _getSourceFiles(sourceDir);
 
 			fileCollections.add(fileCollection);
 		}
@@ -173,7 +173,10 @@ public abstract class BaseMergeTask extends DefaultTask {
 		return sourceDirs(Arrays.asList(sourceDirs));
 	}
 
-	protected FileCollection getSourceFiles(File sourceDir) {
+	protected abstract void merge(Set<File> sourceFiles, File destinationFile)
+		throws IOException;
+
+	private FileCollection _getSourceFiles(File sourceDir) {
 		Project project = getProject();
 
 		Map<String, Object> args = new HashMap<>();
@@ -183,9 +186,6 @@ public abstract class BaseMergeTask extends DefaultTask {
 
 		return project.fileTree(args);
 	}
-
-	protected abstract void merge(Set<File> sourceFiles, File destinationFile)
-		throws IOException;
 
 	private Object _destinationDir;
 	private final Set<Object> _sourceDirs = new LinkedHashSet<>();

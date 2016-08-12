@@ -52,13 +52,14 @@ public class JspCPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		GradleUtil.applyPlugin(project, JavaPlugin.class);
 
-		Configuration jspCConfiguration = addConfigurationJspC(project);
-		Configuration jspCToolConfiguration = addConfigurationJspCTool(project);
+		Configuration jspCConfiguration = _addConfigurationJspC(project);
+		Configuration jspCToolConfiguration = _addConfigurationJspCTool(
+			project);
 
-		final CompileJSPTask generateJSPJavaTask = addTaskGenerateJSPJava(
+		final CompileJSPTask generateJSPJavaTask = _addTaskGenerateJSPJava(
 			project, jspCConfiguration, jspCToolConfiguration);
 
-		addTaskCompileJSP(
+		_addTaskCompileJSP(
 			generateJSPJavaTask, jspCConfiguration, jspCToolConfiguration);
 
 		project.afterEvaluate(
@@ -66,13 +67,13 @@ public class JspCPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(Project project) {
-					addDependenciesJspC(project);
+					_addDependenciesJspC(project);
 				}
 
 			});
 	}
 
-	protected Configuration addConfigurationJspC(Project project) {
+	private Configuration _addConfigurationJspC(Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, CONFIGURATION_NAME);
 
@@ -83,7 +84,7 @@ public class JspCPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected Configuration addConfigurationJspCTool(final Project project) {
+	private Configuration _addConfigurationJspCTool(final Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, TOOL_CONFIGURATION_NAME);
 
@@ -92,7 +93,7 @@ public class JspCPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addDependenciesJspCTool(project);
+					_addDependenciesJspCTool(project);
 				}
 
 			});
@@ -104,7 +105,7 @@ public class JspCPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addDependenciesJspC(Project project) {
+	private void _addDependenciesJspC(Project project) {
 		DependencyHandler dependencyHandler = project.getDependencies();
 
 		Jar jar = (Jar)GradleUtil.getTask(project, JavaPlugin.JAR_TASK_NAME);
@@ -127,7 +128,7 @@ public class JspCPlugin implements Plugin<Project> {
 		dependencyHandler.add(CONFIGURATION_NAME, configuration);
 	}
 
-	protected void addDependenciesJspCTool(Project project) {
+	private void _addDependenciesJspCTool(Project project) {
 		GradleUtil.addDependency(
 			project, TOOL_CONFIGURATION_NAME, "org.apache.ant", "ant", "1.9.4");
 		GradleUtil.addDependency(
@@ -135,7 +136,7 @@ public class JspCPlugin implements Plugin<Project> {
 			"com.liferay.jasper.jspc", "latest.release");
 	}
 
-	protected JavaCompile addTaskCompileJSP(
+	private JavaCompile _addTaskCompileJSP(
 		CompileJSPTask generateJSPJavaTask, Configuration jspCConfiguration,
 		Configuration jspCToolConfiguration) {
 
@@ -152,7 +153,7 @@ public class JspCPlugin implements Plugin<Project> {
 		return javaCompile;
 	}
 
-	protected CompileJSPTask addTaskGenerateJSPJava(
+	private CompileJSPTask _addTaskGenerateJSPJava(
 		Project project, Configuration jspCConfiguration,
 		Configuration jspCToolConfiguration) {
 
@@ -185,7 +186,7 @@ public class JspCPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(WarPlugin warPlugin) {
-					configureTaskGenerateJSPJavaForWarPlugin(compileJSPTask);
+					_configureTaskGenerateJSPJavaForWarPlugin(compileJSPTask);
 				}
 
 			});
@@ -193,7 +194,7 @@ public class JspCPlugin implements Plugin<Project> {
 		return compileJSPTask;
 	}
 
-	protected void configureTaskGenerateJSPJavaForWarPlugin(
+	private void _configureTaskGenerateJSPJavaForWarPlugin(
 		final CompileJSPTask compileJSPTask) {
 
 		compileJSPTask.setWebAppDir(

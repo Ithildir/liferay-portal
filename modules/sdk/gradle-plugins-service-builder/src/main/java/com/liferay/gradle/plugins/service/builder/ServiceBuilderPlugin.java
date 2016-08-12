@@ -46,14 +46,14 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 		GradleUtil.applyPlugin(project, JavaPlugin.class);
 
 		Configuration serviceBuilderConfiguration =
-			addConfigurationServiceBuilder(project);
+			_addConfigurationServiceBuilder(project);
 
-		addTaskBuildService(project);
+		_addTaskBuildService(project);
 
-		configureTasksBuildService(project, serviceBuilderConfiguration);
+		_configureTasksBuildService(project, serviceBuilderConfiguration);
 	}
 
-	protected Configuration addConfigurationServiceBuilder(
+	private Configuration _addConfigurationServiceBuilder(
 		final Project project) {
 
 		Configuration configuration = GradleUtil.addConfiguration(
@@ -64,7 +64,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addDependenciesServiceBuilder(project);
+					_addDependenciesServiceBuilder(project);
 				}
 
 			});
@@ -76,13 +76,13 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addDependenciesServiceBuilder(Project project) {
+	private void _addDependenciesServiceBuilder(Project project) {
 		GradleUtil.addDependency(
 			project, CONFIGURATION_NAME, "com.liferay",
 			"com.liferay.portal.tools.service.builder", "latest.release");
 	}
 
-	protected BuildServiceTask addTaskBuildService(final Project project) {
+	private BuildServiceTask _addTaskBuildService(final Project project) {
 		final BuildServiceTask buildServiceTask = GradleUtil.addTask(
 			project, BUILD_SERVICE_TASK_NAME, BuildServiceTask.class);
 
@@ -211,7 +211,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(WarPlugin warPlugin) {
-					configureTaskBuildServiceForWarPlugin(buildServiceTask);
+					_configureTaskBuildServiceForWarPlugin(buildServiceTask);
 				}
 
 			});
@@ -219,14 +219,14 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 		return buildServiceTask;
 	}
 
-	protected void configureTaskBuildServiceClasspath(
+	private void _configureTaskBuildServiceClasspath(
 		BuildServiceTask buildServiceTask,
 		Configuration serviceBuilderConfiguration) {
 
 		buildServiceTask.setClasspath(serviceBuilderConfiguration);
 	}
 
-	protected void configureTaskBuildServiceForWarPlugin(
+	private void _configureTaskBuildServiceForWarPlugin(
 		final BuildServiceTask buildServiceTask) {
 
 		buildServiceTask.setApiDir(
@@ -269,7 +269,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 			});
 	}
 
-	protected void configureTasksBuildService(
+	private void _configureTasksBuildService(
 		Project project, final Configuration serviceBuilderConfiguration) {
 
 		TaskContainer taskContainer = project.getTasks();
@@ -280,7 +280,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(BuildServiceTask buildServiceTask) {
-					configureTaskBuildServiceClasspath(
+					_configureTaskBuildServiceClasspath(
 						buildServiceTask, serviceBuilderConfiguration);
 				}
 

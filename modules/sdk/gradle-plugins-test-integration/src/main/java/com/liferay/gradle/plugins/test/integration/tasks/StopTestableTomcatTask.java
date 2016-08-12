@@ -52,11 +52,11 @@ public class StopTestableTomcatTask
 		super.stopAppServer();
 
 		if (isDeleteTestModules()) {
-			deleteTestModules();
+			_deleteTestModules();
 		}
 	}
 
-	protected void deleteTestModules() {
+	private void _deleteTestModules() {
 		Logger logger = getLogger();
 
 		File moduleFrameworkBaseDir = getModuleFrameworkBaseDir();

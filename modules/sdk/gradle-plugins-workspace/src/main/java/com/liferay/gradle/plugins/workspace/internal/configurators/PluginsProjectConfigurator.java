@@ -58,17 +58,17 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 			project.getRootProject(),
 			RootProjectConfigurator.INIT_BUNDLE_TASK_NAME);
 
-		configureAnt(project);
+		_configureAnt(project);
 
-		UpdatePropertiesTask updatePropertiesTask = addTaskUpdateProperties(
+		UpdatePropertiesTask updatePropertiesTask = _addTaskUpdateProperties(
 			project, workspaceExtension);
 
-		addTaskBuild(project, updatePropertiesTask);
-		configureTaskWar(project, workspaceExtension, initBundleTask);
+		_addTaskBuild(project, updatePropertiesTask);
+		_configureTaskWar(project, workspaceExtension, initBundleTask);
 
-		configureRootTaskDistBundle(
+		_configureRootTaskDistBundle(
 			project, RootProjectConfigurator.DIST_BUNDLE_TAR_TASK_NAME);
-		configureRootTaskDistBundle(
+		_configureRootTaskDistBundle(
 			project, RootProjectConfigurator.DIST_BUNDLE_ZIP_TASK_NAME);
 	}
 
@@ -77,7 +77,28 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 		return _NAME;
 	}
 
-	protected Task addTaskBuild(
+	@Override
+	protected Iterable<File> doGetProjectDirs(File rootDir) throws Exception {
+		File buildXmlFile = new File(rootDir, "build.xml");
+
+		if (!buildXmlFile.exists()) {
+			return Collections.emptySet();
+		}
+
+		return Collections.singleton(rootDir);
+	}
+
+	@Override
+	protected String getDefaultRootDirName() {
+		return _DEFAULT_ROOT_DIR_NAME;
+	}
+
+	@Override
+	protected String getDefaultRootDirPropertyName() {
+		return _DEFAULT_ROOT_DIR_PROPERTY_NAME;
+	}
+
+	private Task _addTaskBuild(
 		Project project, UpdatePropertiesTask updatePropertiesTask) {
 
 		Task task = project.task(LifecycleBasePlugin.BUILD_TASK_NAME);
@@ -88,7 +109,7 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 		return task;
 	}
 
-	protected UpdatePropertiesTask addTaskUpdateProperties(
+	private UpdatePropertiesTask _addTaskUpdateProperties(
 		Project project, final WorkspaceExtension workspaceExtension) {
 
 		UpdatePropertiesTask updatePropertiesTask = GradleUtil.addTask(
@@ -118,13 +139,13 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 		return updatePropertiesTask;
 	}
 
-	protected void configureAnt(Project project) {
+	private void _configureAnt(Project project) {
 		AntBuilder antBuilder = project.getAnt();
 
 		antBuilder.importBuild("build.xml");
 	}
 
-	protected void configureRootTaskDistBundle(
+	private void _configureRootTaskDistBundle(
 		final Project project, String rootTaskName) {
 
 		CopySpec copySpec = (CopySpec)GradleUtil.getTask(
@@ -148,7 +169,7 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 			});
 	}
 
-	protected void configureTaskWar(
+	private void _configureTaskWar(
 		Project project, final WorkspaceExtension workspaceExtension,
 		final Task initBundleTask) {
 
@@ -169,27 +190,6 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 				}
 
 			});
-	}
-
-	@Override
-	protected Iterable<File> doGetProjectDirs(File rootDir) throws Exception {
-		File buildXmlFile = new File(rootDir, "build.xml");
-
-		if (!buildXmlFile.exists()) {
-			return Collections.emptySet();
-		}
-
-		return Collections.singleton(rootDir);
-	}
-
-	@Override
-	protected String getDefaultRootDirName() {
-		return _DEFAULT_ROOT_DIR_NAME;
-	}
-
-	@Override
-	protected String getDefaultRootDirPropertyName() {
-		return _DEFAULT_ROOT_DIR_PROPERTY_NAME;
 	}
 
 	private static final String _DEFAULT_ROOT_DIR_NAME = "plugins-sdk";

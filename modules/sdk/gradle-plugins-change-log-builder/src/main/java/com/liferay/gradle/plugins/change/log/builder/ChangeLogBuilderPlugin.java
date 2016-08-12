@@ -35,10 +35,10 @@ public class ChangeLogBuilderPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		addTaskBuildChangeLog(project);
+		_addTaskBuildChangeLog(project);
 	}
 
-	protected BuildChangeLogTask addTaskBuildChangeLog(Project project) {
+	private BuildChangeLogTask _addTaskBuildChangeLog(Project project) {
 		final BuildChangeLogTask buildChangeLogTask = GradleUtil.addTask(
 			project, BUILD_CHANGE_LOG_TASK_NAME, BuildChangeLogTask.class);
 
@@ -67,7 +67,7 @@ public class ChangeLogBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(JavaPlugin javaPlugin) {
-					configureTaskBuildChangeLogForJavaPlugin(
+					_configureTaskBuildChangeLogForJavaPlugin(
 						buildChangeLogTask);
 				}
 
@@ -76,7 +76,7 @@ public class ChangeLogBuilderPlugin implements Plugin<Project> {
 		return buildChangeLogTask;
 	}
 
-	protected void configureTaskBuildChangeLogForJavaPlugin(
+	private void _configureTaskBuildChangeLogForJavaPlugin(
 		final BuildChangeLogTask buildChangeLogTask) {
 
 		buildChangeLogTask.setChangeLogFile(

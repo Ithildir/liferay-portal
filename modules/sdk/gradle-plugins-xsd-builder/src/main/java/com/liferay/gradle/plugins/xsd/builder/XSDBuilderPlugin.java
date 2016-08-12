@@ -52,22 +52,22 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 	public void apply(Project project) {
 		GradleUtil.applyPlugin(project, JavaPlugin.class);
 
-		addConfigurationXSDBuilder(project);
+		_addConfigurationXSDBuilder(project);
 
-		addTaskBuildXSD(project);
+		_addTaskBuildXSD(project);
 
 		project.afterEvaluate(
 			new Action<Project>() {
 
 				@Override
 				public void execute(Project project) {
-					configureTasksBuildXSD(project);
+					_configureTasksBuildXSD(project);
 				}
 
 			});
 	}
 
-	protected Configuration addConfigurationXSDBuilder(final Project project) {
+	private Configuration _addConfigurationXSDBuilder(final Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, CONFIGURATION_NAME);
 
@@ -76,7 +76,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addDependenciesXSDBuilder(project);
+					_addDependenciesXSDBuilder(project);
 				}
 
 			});
@@ -88,13 +88,13 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addDependenciesXSDBuilder(Project project) {
+	private void _addDependenciesXSDBuilder(Project project) {
 		GradleUtil.addDependency(
 			project, CONFIGURATION_NAME, "org.apache.xmlbeans", "xmlbeans",
 			"2.5.0");
 	}
 
-	protected BuildXSDTask addTaskBuildXSD(Project project) {
+	private BuildXSDTask _addTaskBuildXSD(Project project) {
 		final BuildXSDTask buildXSDTask = GradleUtil.addTask(
 			project, BUILD_XSD_TASK_NAME, BuildXSDTask.class);
 
@@ -112,7 +112,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(WarPlugin warPlugin) {
-					configureTaskBuildXSDForWarPlugin(buildXSDTask);
+					_configureTaskBuildXSDForWarPlugin(buildXSDTask);
 				}
 
 			});
@@ -120,7 +120,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 		return buildXSDTask;
 	}
 
-	protected Task addTaskBuildXSDCompile(
+	private Task _addTaskBuildXSDCompile(
 		BuildXSDTask buildXSDTask, Task generateTask) {
 
 		Project project = buildXSDTask.getProject();
@@ -146,7 +146,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 		return javaCompile;
 	}
 
-	protected Task addTaskBuildXSDGenerate(BuildXSDTask buildXSDTask) {
+	private Task _addTaskBuildXSDGenerate(BuildXSDTask buildXSDTask) {
 		Project project = buildXSDTask.getProject();
 
 		JavaExec javaExec = GradleUtil.addTask(
@@ -187,16 +187,16 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 		return javaExec;
 	}
 
-	protected void configureTaskBuildXSD(BuildXSDTask buildXSDTask) {
+	private void _configureTaskBuildXSD(BuildXSDTask buildXSDTask) {
 		FileCollection inputFiles = buildXSDTask.getInputFiles();
 
 		if (inputFiles.isEmpty()) {
 			return;
 		}
 
-		Task generateTask = addTaskBuildXSDGenerate(buildXSDTask);
+		Task generateTask = _addTaskBuildXSDGenerate(buildXSDTask);
 
-		Task compileTask = addTaskBuildXSDCompile(buildXSDTask, generateTask);
+		Task compileTask = _addTaskBuildXSDCompile(buildXSDTask, generateTask);
 
 		buildXSDTask.from(compileTask.getOutputs());
 		buildXSDTask.from(generateTask.getOutputs());
@@ -208,7 +208,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 			taskOutputs.getFiles());
 	}
 
-	protected void configureTaskBuildXSDForWarPlugin(
+	private void _configureTaskBuildXSDForWarPlugin(
 		final BuildXSDTask buildXSDTask) {
 
 		buildXSDTask.setDestinationDir(
@@ -238,7 +238,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 			});
 	}
 
-	protected void configureTasksBuildXSD(Project project) {
+	private void _configureTasksBuildXSD(Project project) {
 		TaskContainer taskContainer = project.getTasks();
 
 		taskContainer.withType(
@@ -247,7 +247,7 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(BuildXSDTask buildXSDTask) {
-					configureTaskBuildXSD(buildXSDTask);
+					_configureTaskBuildXSD(buildXSDTask);
 				}
 
 			});

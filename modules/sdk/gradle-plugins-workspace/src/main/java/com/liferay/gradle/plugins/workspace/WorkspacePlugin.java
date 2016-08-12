@@ -44,7 +44,7 @@ public class WorkspacePlugin implements Plugin<Settings> {
 	public void apply(Settings settings) {
 		Gradle gradle = settings.getGradle();
 
-		final WorkspaceExtension workspaceExtension = addWorkspaceExtension(
+		final WorkspaceExtension workspaceExtension = _addWorkspaceExtension(
 			settings);
 
 		for (ProjectConfigurator projectConfigurator :
@@ -89,7 +89,7 @@ public class WorkspacePlugin implements Plugin<Settings> {
 			});
 	}
 
-	protected WorkspaceExtension addWorkspaceExtension(Settings settings) {
+	private WorkspaceExtension _addWorkspaceExtension(Settings settings) {
 		ExtensionAware extensionAware = (ExtensionAware)settings.getGradle();
 
 		ExtensionContainer extensionContainer = extensionAware.getExtensions();

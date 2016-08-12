@@ -43,14 +43,14 @@ public class SoyPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		Configuration soyConfiguration = addConfigurationSoy(project);
+		Configuration soyConfiguration = _addConfigurationSoy(project);
 
-		addTaskBuildSoy(project);
+		_addTaskBuildSoy(project);
 
-		configureTasksBuildSoy(project, soyConfiguration);
+		_configureTasksBuildSoy(project, soyConfiguration);
 	}
 
-	protected Configuration addConfigurationSoy(final Project project) {
+	private Configuration _addConfigurationSoy(final Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, CONFIGURATION_NAME);
 
@@ -59,7 +59,7 @@ public class SoyPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addDependenciesSoy(project);
+					_addDependenciesSoy(project);
 				}
 
 			});
@@ -71,13 +71,13 @@ public class SoyPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addDependenciesSoy(Project project) {
+	private void _addDependenciesSoy(Project project) {
 		GradleUtil.addDependency(
 			project, CONFIGURATION_NAME, "com.google.template", "soy",
 			_VERSION);
 	}
 
-	protected BuildSoyTask addTaskBuildSoy(Project project) {
+	private BuildSoyTask _addTaskBuildSoy(Project project) {
 		final BuildSoyTask buildSoyTask = GradleUtil.addTask(
 			project, BUILD_SOY_TASK_NAME, BuildSoyTask.class);
 
@@ -94,7 +94,7 @@ public class SoyPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(JavaPlugin javaPlugin) {
-					configureTaskBuildSoyForJavaPlugin(buildSoyTask);
+					_configureTaskBuildSoyForJavaPlugin(buildSoyTask);
 				}
 
 			});
@@ -102,13 +102,13 @@ public class SoyPlugin implements Plugin<Project> {
 		return buildSoyTask;
 	}
 
-	protected void configureTaskBuildSoyClasspath(
+	private void _configureTaskBuildSoyClasspath(
 		BuildSoyTask buildSoyTask, FileCollection fileCollection) {
 
 		buildSoyTask.setClasspath(fileCollection);
 	}
 
-	protected void configureTaskBuildSoyForJavaPlugin(
+	private void _configureTaskBuildSoyForJavaPlugin(
 		final BuildSoyTask buildSoyTask) {
 
 		buildSoyTask.setSource(
@@ -123,7 +123,7 @@ public class SoyPlugin implements Plugin<Project> {
 			});
 	}
 
-	protected void configureTasksBuildSoy(
+	private void _configureTasksBuildSoy(
 		Project project, final Configuration soyConfiguration) {
 
 		TaskContainer taskContainer = project.getTasks();
@@ -134,7 +134,7 @@ public class SoyPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(BuildSoyTask buildSoyTask) {
-					configureTaskBuildSoyClasspath(
+					_configureTaskBuildSoyClasspath(
 						buildSoyTask, soyConfiguration);
 				}
 

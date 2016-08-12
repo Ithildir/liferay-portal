@@ -57,7 +57,7 @@ public class BuildTaglibsTask extends JavaExec {
 
 	@Override
 	public void exec() {
-		setSystemProperties(getCompleteSystemProperties());
+		setSystemProperties(_getCompleteSystemProperties());
 
 		super.exec();
 	}
@@ -162,7 +162,7 @@ public class BuildTaglibsTask extends JavaExec {
 		_tldDir = tldDir;
 	}
 
-	protected Map<String, Object> getCompleteSystemProperties() {
+	private Map<String, Object> _getCompleteSystemProperties() {
 		Map<String, Object> systemProperties = new HashMap<>(
 			getSystemProperties());
 
@@ -198,23 +198,6 @@ public class BuildTaglibsTask extends JavaExec {
 			"tagbuilder.tld.dir", _relativize(getTldDir()) + "/");
 
 		return systemProperties;
-	}
-
-	protected String getComponentsXml() {
-		FileCollection fileCollection = getComponentsXmlFiles();
-
-		if (fileCollection.isEmpty()) {
-			return "";
-		}
-
-		StringBuilder sb = new StringBuilder();
-
-		for (File file : fileCollection) {
-			sb.append(_relativize(file));
-			sb.append(',');
-		}
-
-		return sb.substring(0, sb.length() - 1);
 	}
 
 	private String _relativize(File file) {

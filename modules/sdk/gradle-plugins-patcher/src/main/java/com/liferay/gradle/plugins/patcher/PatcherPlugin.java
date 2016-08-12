@@ -51,7 +51,7 @@ public class PatcherPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(PatchTask patchTask) {
-					configureTaskPatchPatchedSrcDirMappings(patchTask);
+					_configureTaskPatchPatchedSrcDirMappings(patchTask);
 
 					Project project = patchTask.getProject();
 
@@ -60,7 +60,7 @@ public class PatcherPlugin implements Plugin<Project> {
 
 					javaCompile.dependsOn(patchTask);
 
-					Copy copy = addTaskCopyOriginalLibClasses(patchTask);
+					Copy copy = _addTaskCopyOriginalLibClasses(patchTask);
 
 					Task classesTask = GradleUtil.getTask(
 						project, JavaPlugin.CLASSES_TASK_NAME);
@@ -71,7 +71,7 @@ public class PatcherPlugin implements Plugin<Project> {
 			});
 	}
 
-	protected Copy addTaskCopyOriginalLibClasses(final PatchTask patchTask) {
+	private Copy _addTaskCopyOriginalLibClasses(final PatchTask patchTask) {
 		String taskName =
 			"copy" + StringUtil.capitalize(patchTask.getName()) +
 				"OriginalLibClasses";
@@ -149,7 +149,7 @@ public class PatcherPlugin implements Plugin<Project> {
 		return copy;
 	}
 
-	protected void configureTaskPatchPatchedSrcDirMappings(
+	private void _configureTaskPatchPatchedSrcDirMappings(
 		final PatchTask patchTask) {
 
 		patchTask.patchedSrcDirMapping(

@@ -40,10 +40,10 @@ public class LangMergerPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		addTaskMergeLang(project);
+		_addTaskMergeLang(project);
 	}
 
-	protected MergePropertiesTask addTaskMergeLang(Project project) {
+	private MergePropertiesTask _addTaskMergeLang(Project project) {
 		final MergePropertiesTask mergePropertiesTask = GradleUtil.addTask(
 			project, MERGE_LANG_TASK_NAME, MergePropertiesTask.class);
 
@@ -57,7 +57,7 @@ public class LangMergerPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(JavaPlugin javaPlugin) {
-					configureTaskMergeLangForJavaPlugin(mergePropertiesTask);
+					_configureTaskMergeLangForJavaPlugin(mergePropertiesTask);
 				}
 
 			});
@@ -65,7 +65,7 @@ public class LangMergerPlugin implements Plugin<Project> {
 		return mergePropertiesTask;
 	}
 
-	protected void configureTaskMergeLangForJavaPlugin(
+	private void _configureTaskMergeLangForJavaPlugin(
 		MergePropertiesTask mergePropertiesTask) {
 
 		mergePropertiesTask.mustRunAfter(
@@ -91,7 +91,7 @@ public class LangMergerPlugin implements Plugin<Project> {
 
 			});
 
-		final Project langProject = getLangProject(project);
+		final Project langProject = _getLangProject(project);
 
 		if (langProject != null) {
 			if (logger.isInfoEnabled()) {
@@ -103,7 +103,7 @@ public class LangMergerPlugin implements Plugin<Project> {
 
 					@Override
 					public File call() throws Exception {
-						File contentDir = getContentDir(sourceSet);
+						File contentDir = _getContentDir(sourceSet);
 
 						return langProject.file(
 							project.relativePath(contentDir));
@@ -114,7 +114,7 @@ public class LangMergerPlugin implements Plugin<Project> {
 
 					@Override
 					public File call() throws Exception {
-						return getContentDir(sourceSet);
+						return _getContentDir(sourceSet);
 					}
 
 				});
@@ -130,13 +130,13 @@ public class LangMergerPlugin implements Plugin<Project> {
 		classesTask.dependsOn(mergePropertiesTask);
 	}
 
-	protected File getContentDir(SourceSet sourceSet) {
+	private File _getContentDir(SourceSet sourceSet) {
 		File resourcesDir = GradleUtil.getSrcDir(sourceSet.getResources());
 
 		return new File(resourcesDir, "content");
 	}
 
-	protected Project getLangProject(Project project) {
+	private Project _getLangProject(Project project) {
 		Project parentProject = project.getParent();
 
 		if (parentProject == null) {

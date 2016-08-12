@@ -41,15 +41,15 @@ public class LangBuilderPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		Configuration langBuilderConfiguration = addConfigurationLangBuilder(
+		Configuration langBuilderConfiguration = _addConfigurationLangBuilder(
 			project);
 
-		addTaskBuildLang(project);
+		_addTaskBuildLang(project);
 
-		configureTasksBuildLang(project, langBuilderConfiguration);
+		_configureTasksBuildLang(project, langBuilderConfiguration);
 	}
 
-	protected Configuration addConfigurationLangBuilder(final Project project) {
+	private Configuration _addConfigurationLangBuilder(final Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, CONFIGURATION_NAME);
 
@@ -58,7 +58,7 @@ public class LangBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addDependenciesLangBuilder(project);
+					_addDependenciesLangBuilder(project);
 				}
 
 			});
@@ -70,13 +70,13 @@ public class LangBuilderPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addDependenciesLangBuilder(Project project) {
+	private void _addDependenciesLangBuilder(Project project) {
 		GradleUtil.addDependency(
 			project, CONFIGURATION_NAME, "com.liferay",
 			"com.liferay.lang.builder", "latest.release");
 	}
 
-	protected BuildLangTask addTaskBuildLang(Project project) {
+	private BuildLangTask _addTaskBuildLang(Project project) {
 		final BuildLangTask buildLangTask = GradleUtil.addTask(
 			project, BUILD_LANG_TASK_NAME, BuildLangTask.class);
 
@@ -91,7 +91,7 @@ public class LangBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(JavaPlugin javaPlugin) {
-					configureTaskBuildLangForJavaPlugin(buildLangTask);
+					_configureTaskBuildLangForJavaPlugin(buildLangTask);
 				}
 
 			});
@@ -99,13 +99,13 @@ public class LangBuilderPlugin implements Plugin<Project> {
 		return buildLangTask;
 	}
 
-	protected void configureTaskBuildLangClasspath(
+	private void _configureTaskBuildLangClasspath(
 		BuildLangTask buildLangTask, FileCollection fileCollection) {
 
 		buildLangTask.setClasspath(fileCollection);
 	}
 
-	protected void configureTaskBuildLangForJavaPlugin(
+	private void _configureTaskBuildLangForJavaPlugin(
 		final BuildLangTask buildLangTask) {
 
 		buildLangTask.setLangDir(
@@ -122,7 +122,7 @@ public class LangBuilderPlugin implements Plugin<Project> {
 			});
 	}
 
-	protected void configureTasksBuildLang(
+	private void _configureTasksBuildLang(
 		Project project, final Configuration langBuilderConfiguration) {
 
 		TaskContainer taskContainer = project.getTasks();
@@ -133,7 +133,7 @@ public class LangBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(BuildLangTask buildLangTask) {
-					configureTaskBuildLangClasspath(
+					_configureTaskBuildLangClasspath(
 						buildLangTask, langBuilderConfiguration);
 				}
 

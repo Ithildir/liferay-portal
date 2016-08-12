@@ -36,25 +36,25 @@ public class WhipPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		addWhipConfiguration(project);
+		_addWhipConfiguration(project);
 
 		GradleUtil.addExtension(project, EXTENSION_NAME, WhipExtension.class);
 
-		applyToDefaultTasks(project);
+		_applyToDefaultTasks(project);
 
 		project.afterEvaluate(
 			new Action<Project>() {
 
 				@Override
 				public void execute(Project project) {
-					addWhipDependencies(
+					_addWhipDependencies(
 						project, JavaPlugin.TEST_RUNTIME_CONFIGURATION_NAME);
 				}
 
 			});
 	}
 
-	protected Configuration addWhipConfiguration(final Project project) {
+	private Configuration _addWhipConfiguration(final Project project) {
 		final Configuration configuration = GradleUtil.addConfiguration(
 			project, CONFIGURATION_NAME);
 
@@ -63,7 +63,7 @@ public class WhipPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addWhipDependencies(project, configuration.getName());
+					_addWhipDependencies(project, configuration.getName());
 				}
 
 			});
@@ -75,7 +75,7 @@ public class WhipPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addWhipDependencies(
+	private void _addWhipDependencies(
 		Project project, String configurationName) {
 
 		WhipExtension whipExtension = GradleUtil.getExtension(
@@ -86,7 +86,7 @@ public class WhipPlugin implements Plugin<Project> {
 			whipExtension.getVersion());
 	}
 
-	protected void applyToDefaultTasks(Project project) {
+	private void _applyToDefaultTasks(Project project) {
 		TaskContainer taskContainer = project.getTasks();
 
 		taskContainer.withType(

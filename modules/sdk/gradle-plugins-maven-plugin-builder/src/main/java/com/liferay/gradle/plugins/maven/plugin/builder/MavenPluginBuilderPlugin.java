@@ -54,21 +54,21 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 		GradleUtil.applyPlugin(project, JavaPlugin.class);
 
 		Configuration mavenEmbedderConfiguration =
-			addConfigurationMavenEmbedder(project);
+			_addConfigurationMavenEmbedder(project);
 
 		BuildPluginDescriptorTask buildPluginDescriptorTask =
-			addTaskBuildPluginDescriptor(project, mavenEmbedderConfiguration);
+			_addTaskBuildPluginDescriptor(project, mavenEmbedderConfiguration);
 
 		JavaVersion javaVersion = JavaVersion.current();
 
 		if (javaVersion.isJava8Compatible()) {
-			configureTasksJavadocDisableDoclint(project);
+			_configureTasksJavadocDisableDoclint(project);
 		}
 
-		configureTasksUpload(project, buildPluginDescriptorTask);
+		_configureTasksUpload(project, buildPluginDescriptorTask);
 	}
 
-	protected Configuration addConfigurationMavenEmbedder(
+	private Configuration _addConfigurationMavenEmbedder(
 		final Project project) {
 
 		Configuration configuration = GradleUtil.addConfiguration(
@@ -79,7 +79,7 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(DependencySet dependencySet) {
-					addDependenciesMavenEmbedder(project);
+					_addDependenciesMavenEmbedder(project);
 				}
 
 			});
@@ -91,7 +91,7 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	protected void addDependenciesMavenEmbedder(Project project) {
+	private void _addDependenciesMavenEmbedder(Project project) {
 		GradleUtil.addDependency(
 			project, MAVEN_EMBEDDER_CONFIGURATION_NAME, "org.apache.maven",
 			"maven-embedder", "3.3.9");
@@ -109,7 +109,7 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 			"slf4j-simple", "1.7.5");
 	}
 
-	protected BuildPluginDescriptorTask addTaskBuildPluginDescriptor(
+	private BuildPluginDescriptorTask _addTaskBuildPluginDescriptor(
 		final Project project, FileCollection mavenEmbedderClasspath) {
 
 		BuildPluginDescriptorTask buildPluginDescriptorTask =
@@ -207,14 +207,14 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 		return buildPluginDescriptorTask;
 	}
 
-	protected void configureTaskJavadocDisableDoclint(Javadoc javadoc) {
+	private void _configureTaskJavadocDisableDoclint(Javadoc javadoc) {
 		CoreJavadocOptions coreJavadocOptions =
 			(CoreJavadocOptions)javadoc.getOptions();
 
 		coreJavadocOptions.addStringOption("Xdoclint:none", "-quiet");
 	}
 
-	protected void configureTasksJavadocDisableDoclint(Project project) {
+	private void _configureTasksJavadocDisableDoclint(Project project) {
 		TaskContainer taskContainer = project.getTasks();
 
 		taskContainer.withType(
@@ -223,13 +223,13 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(Javadoc javadoc) {
-					configureTaskJavadocDisableDoclint(javadoc);
+					_configureTaskJavadocDisableDoclint(javadoc);
 				}
 
 			});
 	}
 
-	protected void configureTasksUpload(
+	private void _configureTasksUpload(
 		Project project,
 		final BuildPluginDescriptorTask buildPluginDescriptorTask) {
 
@@ -241,13 +241,13 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(Upload upload) {
-					configureTaskUpload(upload, buildPluginDescriptorTask);
+					_configureTaskUpload(upload, buildPluginDescriptorTask);
 				}
 
 			});
 	}
 
-	protected void configureTaskUpload(
+	private void _configureTaskUpload(
 		Upload upload, BuildPluginDescriptorTask buildPluginDescriptorTask) {
 
 		upload.dependsOn(buildPluginDescriptorTask);
