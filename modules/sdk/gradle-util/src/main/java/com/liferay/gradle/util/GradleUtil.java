@@ -381,6 +381,8 @@ public class GradleUtil {
 	}
 
 	public static File toFile(Project project, Object object) {
+		object = toObject(object);
+
 		if (object == null) {
 			return null;
 		}
