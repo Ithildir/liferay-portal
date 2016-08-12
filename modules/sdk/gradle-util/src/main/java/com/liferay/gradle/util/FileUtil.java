@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.gradle.api.AntBuilder;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 
@@ -56,8 +57,7 @@ import org.gradle.api.logging.Logger;
 public class FileUtil {
 
 	public static void concatenate(
-			File destinationFile, Iterable<File> sourceFiles)
-		throws IOException {
+		File destinationFile, Iterable<File> sourceFiles) {
 
 		try (FileOutputStream fileOutputStream = new FileOutputStream(
 				destinationFile);
@@ -72,6 +72,9 @@ public class FileUtil {
 						0, sourceChannel.size(), destinationChannel);
 				}
 			}
+		}
+		catch (IOException ioe) {
+			throw new UncheckedIOException(ioe);
 		}
 	}
 
@@ -99,20 +102,17 @@ public class FileUtil {
 		return file.exists();
 	}
 
-	public static File get(Project project, String url) throws IOException {
+	public static File get(Project project, String url) {
 		return get(project, url, null);
 	}
 
-	public static File get(Project project, String url, File destinationFile)
-		throws IOException {
-
+	public static File get(Project project, String url, File destinationFile) {
 		return get(project, url, destinationFile, false, true);
 	}
 
 	public static synchronized File get(
-			Project project, String url, File destinationFile,
-			boolean ignoreErrors, boolean tryLocalNetwork)
-		throws IOException {
+		Project project, String url, File destinationFile, boolean ignoreErrors,
+		boolean tryLocalNetwork) {
 
 		String mirrorsCacheArtifactSubdir = url.replaceFirst(
 			"https?:\\/\\/(.+\\/).+", "$1");
@@ -156,11 +156,16 @@ public class FileUtil {
 			destinationPath = destinationPath.resolve(fileName);
 		}
 
-		Files.createDirectories(destinationPath.getParent());
+		try {
+			Files.createDirectories(destinationPath.getParent());
 
-		Files.copy(
-			mirrorsCacheArtifactFile.toPath(), destinationPath,
-			StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(
+				mirrorsCacheArtifactFile.toPath(), destinationPath,
+				StandardCopyOption.REPLACE_EXISTING);
+		}
+		catch (IOException ioe) {
+			throw new UncheckedIOException(ioe);
+		}
 
 		return destinationPath.toFile();
 	}
@@ -211,16 +216,11 @@ public class FileUtil {
 
 		boolean upToDate = false;
 
-		try {
-			long sourceLastModified = _getLastModified(sourceFile);
-			long targetLastModified = _getLastModified(targetFile);
+		long sourceLastModified = _getLastModified(sourceFile);
+		long targetLastModified = _getLastModified(targetFile);
 
-			if (targetLastModified >= sourceLastModified) {
-				upToDate = true;
-			}
-		}
-		catch (IOException ioe) {
-			throw new GradleException(ioe.getMessage(), ioe);
+		if (targetLastModified >= sourceLastModified) {
+			upToDate = true;
 		}
 
 		return upToDate;
@@ -257,7 +257,7 @@ public class FileUtil {
 		return sb.toString();
 	}
 
-	public static String read(String resourceName) throws IOException {
+	public static String read(String resourceName) {
 		StringBuilder sb = new StringBuilder();
 
 		ClassLoader classLoader = FileUtil.class.getClassLoader();
@@ -273,25 +273,29 @@ public class FileUtil {
 				sb.append('\n');
 			}
 		}
+		catch (IOException ioe) {
+			throw new UncheckedIOException(ioe);
+		}
 
 		return sb.toString();
 	}
 
-	public static Properties readProperties(File file) throws IOException {
+	public static Properties readProperties(File file) {
 		Properties properties = new Properties();
 
 		if (file.exists()) {
 			try (FileInputStream fileInputStream = new FileInputStream(file)) {
 				properties.load(fileInputStream);
 			}
+			catch (IOException ioe) {
+				throw new UncheckedIOException(ioe);
+			}
 		}
 
 		return properties;
 	}
 
-	public static Properties readProperties(Project project, String fileName)
-		throws IOException {
-
+	public static Properties readProperties(Project project, String fileName) {
 		File file = project.file(fileName);
 
 		return readProperties(file);
@@ -383,7 +387,7 @@ public class FileUtil {
 		return fileName;
 	}
 
-	public static void write(File file, List<String> lines) throws IOException {
+	public static void write(File file, List<String> lines) {
 		try (PrintWriter printWriter = new PrintWriter(
 				new OutputStreamWriter(
 					new FileOutputStream(file), StandardCharsets.UTF_8))) {
@@ -398,6 +402,9 @@ public class FileUtil {
 					printWriter.print(line);
 				}
 			}
+		}
+		catch (IOException ioe) {
+			throw new UncheckedIOException(ioe);
 		}
 	}
 
@@ -488,36 +495,41 @@ public class FileUtil {
 		}
 	}
 
-	private static long _getLastModified(File file) throws IOException {
-		if (file.isFile()) {
-			return file.lastModified();
-		}
+	private static long _getLastModified(File file) {
+		try {
+			if (file.isFile()) {
+				return file.lastModified();
+			}
 
-		final AtomicLong lastModified = new AtomicLong();
+			final AtomicLong lastModified = new AtomicLong();
 
-		Files.walkFileTree(
-			file.toPath(),
-			new SimpleFileVisitor<Path>() {
+			Files.walkFileTree(
+				file.toPath(),
+				new SimpleFileVisitor<Path>() {
 
-				@Override
-				public FileVisitResult visitFile(
-						Path path, BasicFileAttributes basicFileAttributes)
-					throws IOException {
+					@Override
+					public FileVisitResult visitFile(
+						Path path, BasicFileAttributes basicFileAttributes) {
 
-					FileTime fileTime = basicFileAttributes.lastModifiedTime();
+						FileTime fileTime =
+							basicFileAttributes.lastModifiedTime();
 
-					long fileTimeMillis = fileTime.toMillis();
+						long fileTimeMillis = fileTime.toMillis();
 
-					if (fileTimeMillis > lastModified.longValue()) {
-						lastModified.set(fileTimeMillis);
+						if (fileTimeMillis > lastModified.longValue()) {
+							lastModified.set(fileTimeMillis);
+						}
+
+						return FileVisitResult.CONTINUE;
 					}
 
-					return FileVisitResult.CONTINUE;
-				}
+				});
 
-			});
-
-		return lastModified.get();
+			return lastModified.get();
+		}
+		catch (IOException ioe) {
+			throw new UncheckedIOException(ioe);
+		}
 	}
 
 	private static File _getMirrorsCacheDir() {
