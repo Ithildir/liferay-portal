@@ -22,9 +22,9 @@ import com.liferay.gradle.plugins.test.integration.tasks.SetUpArquillianTask;
 import com.liferay.gradle.plugins.test.integration.tasks.SetUpTestableTomcatTask;
 import com.liferay.gradle.plugins.test.integration.tasks.StartTestableTomcatTask;
 import com.liferay.gradle.plugins.test.integration.tasks.StopTestableTomcatTask;
-import com.liferay.gradle.plugins.test.integration.util.GradleUtil;
 import com.liferay.gradle.plugins.test.integration.util.StringUtil;
 import com.liferay.gradle.util.FileUtil;
+import com.liferay.gradle.util.GradleUtil;
 import com.liferay.gradle.util.OSDetector;
 
 import groovy.lang.Closure;
