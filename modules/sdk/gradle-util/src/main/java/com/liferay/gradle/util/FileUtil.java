@@ -49,7 +49,6 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
 
 /**
  * @author Andrea Di Giorgi
@@ -453,6 +452,8 @@ public class FileUtil {
 		Project project, final String url, File destinationFile,
 		final boolean ignoreErrors) {
 
+		final Logger logger = project.getLogger();
+
 		final File tmpFile = new File(
 			destinationFile.getParentFile(),
 			destinationFile.getName() + ".tmp");
@@ -469,9 +470,9 @@ public class FileUtil {
 				args.put("ignoreerrors", ignoreErrors);
 				args.put("src", url);
 
-				if (_logger.isLifecycleEnabled()) {
-					_logger.lifecycle(
-						"Trying to download " + url + " to " + tmpFile);
+				if (logger.isLifecycleEnabled()) {
+					logger.lifecycle(
+						"Trying to download {} to {}", url, tmpFile);
 				}
 
 				antBuilder.invokeMethod("get", args);
@@ -641,7 +642,5 @@ public class FileUtil {
 
 	private static final File _TMP_DIR = new File(
 		System.getProperty("java.io.tmpdir"));
-
-	private static final Logger _logger = Logging.getLogger(FileUtil.class);
 
 }
