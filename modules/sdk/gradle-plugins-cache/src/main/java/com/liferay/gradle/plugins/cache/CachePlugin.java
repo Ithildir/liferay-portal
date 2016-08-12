@@ -14,8 +14,8 @@
 
 package com.liferay.gradle.plugins.cache;
 
+import com.liferay.gradle.plugins.cache.internal.task.TaskCacheApplicator;
 import com.liferay.gradle.plugins.cache.task.TaskCache;
-import com.liferay.gradle.plugins.cache.task.TaskCacheApplicator;
 import com.liferay.gradle.util.GradleUtil;
 
 import org.gradle.api.Action;
