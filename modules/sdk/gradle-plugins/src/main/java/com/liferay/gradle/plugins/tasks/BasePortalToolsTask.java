@@ -25,6 +25,7 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.process.JavaExecSpec;
@@ -100,20 +101,19 @@ public abstract class BasePortalToolsTask extends JavaExec {
 		configuration = GradleUtil.addConfiguration(
 			project, getConfigurationName());
 
-		configuration.setDescription(
-			"Configures the " + getToolName() + " tool for this project.");
-		configuration.setVisible(false);
-
-		GradleUtil.executeIfEmpty(
-			configuration,
-			new Action<Configuration>() {
+		configuration.defaultDependencies(
+			new Action<DependencySet>() {
 
 				@Override
-				public void execute(Configuration configuration) {
+				public void execute(DependencySet dependencySet) {
 					addDependencies();
 				}
 
 			});
+
+		configuration.setDescription(
+			"Configures the " + getToolName() + " tool for this project.");
+		configuration.setVisible(false);
 
 		return configuration;
 	}

@@ -20,6 +20,7 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.testing.Test;
@@ -54,23 +55,22 @@ public class WhipPlugin implements Plugin<Project> {
 	}
 
 	protected Configuration addWhipConfiguration(final Project project) {
-		Configuration configuration = GradleUtil.addConfiguration(
+		final Configuration configuration = GradleUtil.addConfiguration(
 			project, CONFIGURATION_NAME);
 
-		configuration.setDescription(
-			"Configures Liferay Whip for this project.");
-		configuration.setVisible(false);
-
-		GradleUtil.executeIfEmpty(
-			configuration,
-			new Action<Configuration>() {
+		configuration.defaultDependencies(
+			new Action<DependencySet>() {
 
 				@Override
-				public void execute(Configuration configuration) {
+				public void execute(DependencySet dependencySet) {
 					addWhipDependencies(project, configuration.getName());
 				}
 
 			});
+
+		configuration.setDescription(
+			"Configures Liferay Whip for this project.");
+		configuration.setVisible(false);
 
 		return configuration;
 	}

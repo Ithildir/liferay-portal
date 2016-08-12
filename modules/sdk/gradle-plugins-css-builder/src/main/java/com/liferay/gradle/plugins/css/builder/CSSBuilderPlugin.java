@@ -27,6 +27,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.BasePlugin;
@@ -66,20 +67,19 @@ public class CSSBuilderPlugin implements Plugin<Project> {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, CSS_BUILDER_CONFIGURATION_NAME);
 
-		configuration.setDescription(
-			"Configures Liferay CSS Builder for this project.");
-		configuration.setVisible(false);
-
-		GradleUtil.executeIfEmpty(
-			configuration,
-			new Action<Configuration>() {
+		configuration.defaultDependencies(
+			new Action<DependencySet>() {
 
 				@Override
-				public void execute(Configuration configuration) {
+				public void execute(DependencySet dependencySet) {
 					addDependenciesCSSBuilder(project);
 				}
 
 			});
+
+		configuration.setDescription(
+			"Configures Liferay CSS Builder for this project.");
+		configuration.setVisible(false);
 
 		return configuration;
 	}
@@ -90,22 +90,21 @@ public class CSSBuilderPlugin implements Plugin<Project> {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, PORTAL_COMMON_CSS_CONFIGURATION_NAME);
 
+		configuration.defaultDependencies(
+			new Action<DependencySet>() {
+
+				@Override
+				public void execute(DependencySet dependencySet) {
+					addDependenciesPortalCommonCSS(project);
+				}
+
+			});
+
 		configuration.setDescription(
 			"Configures com.liferay.frontend.css.common for compiling CSS " +
 				"files.");
 		configuration.setTransitive(false);
 		configuration.setVisible(false);
-
-		GradleUtil.executeIfEmpty(
-			configuration,
-			new Action<Configuration>() {
-
-				@Override
-				public void execute(Configuration configuration) {
-					addDependenciesPortalCommonCSS(project);
-				}
-
-			});
 
 		return configuration;
 	}

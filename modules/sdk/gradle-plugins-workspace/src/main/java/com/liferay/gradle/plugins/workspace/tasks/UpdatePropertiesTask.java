@@ -15,7 +15,6 @@
 package com.liferay.gradle.plugins.workspace.tasks;
 
 import com.liferay.gradle.plugins.workspace.util.GradleUtil;
-import com.liferay.gradle.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +30,7 @@ import java.util.Properties;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
@@ -71,7 +71,14 @@ public class UpdatePropertiesTask extends DefaultTask {
 	public void updateProperties() throws IOException {
 		File propertiesFile = getPropertiesFile();
 
-		Properties properties = FileUtil.readProperties(propertiesFile);
+		Properties properties;
+
+		if (propertiesFile.exists()) {
+			properties = GUtil.loadProperties(propertiesFile);
+		}
+		else {
+			properties = new Properties();
+		}
 
 		for (Map.Entry<String, Object> entry : _properties.entrySet()) {
 			String key = entry.getKey();

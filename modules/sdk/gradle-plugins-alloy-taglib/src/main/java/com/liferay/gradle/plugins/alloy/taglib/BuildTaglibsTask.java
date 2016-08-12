@@ -15,7 +15,6 @@
 package com.liferay.gradle.plugins.alloy.taglib;
 
 import com.liferay.gradle.util.GradleUtil;
-import com.liferay.gradle.util.StringUtil;
 import com.liferay.gradle.util.Validator;
 
 import java.io.File;
@@ -33,6 +32,7 @@ import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.SkipWhenEmpty;
+import org.gradle.util.CollectionUtils;
 import org.gradle.util.GUtil;
 
 /**
@@ -235,8 +235,8 @@ public class BuildTaglibsTask extends JavaExec {
 			relativePaths.add(getRelativePath(file));
 		}
 
-		return StringUtil.merge(
-			relativePaths.toArray(new String[relativePaths.size()]), ",");
+		return CollectionUtils.join(
+			",", relativePaths.toArray(new String[relativePaths.size()]));
 	}
 
 	private final List<Object> _componentsXmlFiles = new ArrayList<>();

@@ -81,7 +81,6 @@ import org.dm.gradle.plugins.bundle.BundleUtils;
 import org.dm.gradle.plugins.bundle.JarBuilder;
 
 import org.gradle.api.Action;
-import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -109,6 +108,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.internal.Factory;
+import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
@@ -631,24 +631,23 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 
 		bundleExtension.setFailOnError(true);
 
+		File bndFile = project.file("bnd.bnd");
+
+		if (!bndFile.exists()) {
+			return;
+		}
+
 		Map<String, String> bundleInstructions = getBundleInstructions(
 			bundleExtension);
 
-		Properties bundleProperties = null;
+		Properties properties = GUtil.loadProperties(bndFile);
 
-		try {
-			bundleProperties = FileUtil.readProperties(project, "bnd.bnd");
-		}
-		catch (Exception e) {
-			throw new GradleException("Unable to read bundle properties", e);
-		}
-
-		Enumeration<Object> keys = bundleProperties.keys();
+		Enumeration<Object> keys = properties.keys();
 
 		while (keys.hasMoreElements()) {
 			String key = (String)keys.nextElement();
 
-			String value = bundleProperties.getProperty(key);
+			String value = properties.getProperty(key);
 
 			bundleInstructions.put(key, value);
 		}
