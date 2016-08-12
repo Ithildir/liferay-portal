@@ -34,7 +34,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -142,7 +141,8 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return getSrcDir(testIntegrationSourceSet.getResources());
+					return GradleUtil.getSrcDir(
+						testIntegrationSourceSet.getResources());
 				}
 
 			});
@@ -625,14 +625,6 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 
 		test.setDependsOn(Collections.emptySet());
 		test.setEnabled(false);
-	}
-
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
-		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
-
-		Iterator<File> iterator = srcDirs.iterator();
-
-		return iterator.next();
 	}
 
 	protected String getTomcatExecutableFileName(String fileName) {

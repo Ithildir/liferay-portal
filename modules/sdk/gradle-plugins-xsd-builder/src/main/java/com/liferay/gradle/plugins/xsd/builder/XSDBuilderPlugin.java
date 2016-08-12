@@ -33,7 +33,6 @@ import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.plugins.WarPlugin;
-import org.gradle.api.plugins.WarPluginConvention;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskInputs;
@@ -217,8 +216,10 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return new File(
-						getWebAppDir(buildXSDTask.getProject()), "WEB-INF/lib");
+					File webAppDir = GradleUtil.getWebAppDir(
+						buildXSDTask.getProject());
+
+					return new File(webAppDir, "WEB-INF/lib");
 				}
 
 			});
@@ -228,8 +229,10 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return new File(
-						getWebAppDir(buildXSDTask.getProject()), "WEB-INF/xsd");
+					File webAppDir = GradleUtil.getWebAppDir(
+						buildXSDTask.getProject());
+
+					return new File(webAppDir, "WEB-INF/xsd");
 				}
 
 			});
@@ -248,13 +251,6 @@ public class XSDBuilderPlugin implements Plugin<Project> {
 				}
 
 			});
-	}
-
-	protected File getWebAppDir(Project project) {
-		WarPluginConvention warPluginConvention = GradleUtil.getConvention(
-			project, WarPluginConvention.class);
-
-		return warPluginConvention.getWebAppDir();
 	}
 
 }

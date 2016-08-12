@@ -18,8 +18,6 @@ import com.liferay.gradle.util.GradleUtil;
 
 import java.io.File;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Action;
@@ -27,14 +25,11 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencySet;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.plugins.osgi.OsgiHelper;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.plugins.WarPlugin;
-import org.gradle.api.plugins.WarPluginConvention;
-import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 
 /**
@@ -99,7 +94,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getResourcesDir(project);
+					File resourcesDir = GradleUtil.getMainResourcesDir(project);
 
 					String fileName = "META-INF/portlet-hbm.xml";
 
@@ -117,7 +112,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return getJavaDir(project);
+					return GradleUtil.getMainJavaDir(project);
 				}
 
 			});
@@ -129,7 +124,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getResourcesDir(project);
+					File resourcesDir = GradleUtil.getMainResourcesDir(project);
 
 					return new File(
 						resourcesDir, "META-INF/portlet-model-hints.xml");
@@ -173,7 +168,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return getResourcesDir(project);
+					return GradleUtil.getMainResourcesDir(project);
 				}
 
 			});
@@ -183,7 +178,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getResourcesDir(project);
+					File resourcesDir = GradleUtil.getMainResourcesDir(project);
 
 					String fileName = "META-INF/portlet-spring.xml";
 
@@ -201,7 +196,7 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getResourcesDir(project);
+					File resourcesDir = GradleUtil.getMainResourcesDir(project);
 
 					return new File(resourcesDir, "META-INF/sql");
 				}
@@ -239,9 +234,10 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return new File(
-						getWebAppDir(buildServiceTask.getProject()),
-						"WEB-INF/service");
+					File webAppDir = GradleUtil.getWebAppDir(
+						buildServiceTask.getProject());
+
+					return new File(webAppDir, "WEB-INF/service");
 				}
 
 			});
@@ -251,9 +247,10 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return new File(
-						getWebAppDir(buildServiceTask.getProject()),
-						"WEB-INF/service.xml");
+					File webAppDir = GradleUtil.getWebAppDir(
+						buildServiceTask.getProject());
+
+					return new File(webAppDir, "WEB-INF/service.xml");
 				}
 
 			});
@@ -263,9 +260,10 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return new File(
-						getWebAppDir(buildServiceTask.getProject()),
-						"WEB-INF/sql");
+					File webAppDir = GradleUtil.getWebAppDir(
+						buildServiceTask.getProject());
+
+					return new File(webAppDir, "WEB-INF/sql");
 				}
 
 			});
@@ -287,35 +285,6 @@ public class ServiceBuilderPlugin implements Plugin<Project> {
 				}
 
 			});
-	}
-
-	protected File getJavaDir(Project project) {
-		SourceSet sourceSet = GradleUtil.getSourceSet(
-			project, SourceSet.MAIN_SOURCE_SET_NAME);
-
-		return getSrcDir(sourceSet.getJava());
-	}
-
-	protected File getResourcesDir(Project project) {
-		SourceSet sourceSet = GradleUtil.getSourceSet(
-			project, SourceSet.MAIN_SOURCE_SET_NAME);
-
-		return getSrcDir(sourceSet.getResources());
-	}
-
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
-		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
-
-		Iterator<File> iterator = srcDirs.iterator();
-
-		return iterator.next();
-	}
-
-	protected File getWebAppDir(Project project) {
-		WarPluginConvention warPluginConvention = GradleUtil.getConvention(
-			project, WarPluginConvention.class);
-
-		return warPluginConvention.getWebAppDir();
 	}
 
 	private static final OsgiHelper _osgiHelper = new OsgiHelper();

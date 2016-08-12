@@ -22,8 +22,6 @@ import groovy.lang.Closure;
 import java.io.File;
 
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Action;
@@ -34,15 +32,12 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.plugins.WarPlugin;
-import org.gradle.api.plugins.WarPluginConvention;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.JavaExec;
-import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskInputs;
 import org.gradle.api.tasks.TaskOutputs;
@@ -138,7 +133,8 @@ public class WSDLBuilderPlugin implements Plugin<Project> {
 						return "lib";
 					}
 					else {
-						return getJavaDir(buildWSDLTask.getProject());
+						return GradleUtil.getMainJavaDir(
+							buildWSDLTask.getProject());
 					}
 				}
 
@@ -355,12 +351,14 @@ public class WSDLBuilderPlugin implements Plugin<Project> {
 				@Override
 				public File call() throws Exception {
 					if (buildWSDLTask.isBuildLibs()) {
-						return new File(
-							getWebAppDir(buildWSDLTask.getProject()),
-							"WEB-INF/lib");
+						File webAppDir = GradleUtil.getWebAppDir(
+							buildWSDLTask.getProject());
+
+						return new File(webAppDir, "WEB-INF/lib");
 					}
 					else {
-						return getJavaDir(buildWSDLTask.getProject());
+						return GradleUtil.getMainJavaDir(
+							buildWSDLTask.getProject());
 					}
 				}
 
@@ -371,9 +369,10 @@ public class WSDLBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return new File(
-						getWebAppDir(buildWSDLTask.getProject()),
-						"WEB-INF/wsdl");
+					File webAppDir = GradleUtil.getWebAppDir(
+						buildWSDLTask.getProject());
+
+					return new File(webAppDir, "WEB-INF/wsdl");
 				}
 
 			});
@@ -399,28 +398,6 @@ public class WSDLBuilderPlugin implements Plugin<Project> {
 				}
 
 			});
-	}
-
-	protected File getJavaDir(Project project) {
-		SourceSet sourceSet = GradleUtil.getSourceSet(
-			project, SourceSet.MAIN_SOURCE_SET_NAME);
-
-		return getSrcDir(sourceSet.getJava());
-	}
-
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
-		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
-
-		Iterator<File> iterator = srcDirs.iterator();
-
-		return iterator.next();
-	}
-
-	protected File getWebAppDir(Project project) {
-		WarPluginConvention warPluginConvention = GradleUtil.getConvention(
-			project, WarPluginConvention.class);
-
-		return warPluginConvention.getWebAppDir();
 	}
 
 }

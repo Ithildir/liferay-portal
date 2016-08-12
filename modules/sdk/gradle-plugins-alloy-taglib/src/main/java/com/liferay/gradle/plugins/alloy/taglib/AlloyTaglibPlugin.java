@@ -19,17 +19,13 @@ import com.liferay.gradle.util.Validator;
 
 import java.io.File;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.plugins.osgi.OsgiHelper;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.tasks.SourceSet;
 
 /**
  * @author Andrea Di Giorgi
@@ -64,9 +60,10 @@ public class AlloyTaglibPlugin implements Plugin<Project> {
 						return null;
 					}
 
-					return new File(
-						getJavaDir(buildTaglibsTask.getProject()),
-						javaPackage.replace('.', '/'));
+					File javaDir = GradleUtil.getMainJavaDir(
+						buildTaglibsTask.getProject());
+
+					return new File(javaDir, javaPackage.replace('.', '/'));
 				}
 
 			});
@@ -76,7 +73,7 @@ public class AlloyTaglibPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getResourcesDir(
+					File resourcesDir = GradleUtil.getMainResourcesDir(
 						buildTaglibsTask.getProject());
 
 					return new File(resourcesDir, "META-INF/resources");
@@ -100,7 +97,7 @@ public class AlloyTaglibPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getResourcesDir(
+					File resourcesDir = GradleUtil.getMainResourcesDir(
 						buildTaglibsTask.getProject());
 
 					return new File(resourcesDir, "META-INF/resources");
@@ -109,28 +106,6 @@ public class AlloyTaglibPlugin implements Plugin<Project> {
 			});
 
 		return buildTaglibsTask;
-	}
-
-	protected File getJavaDir(Project project) {
-		SourceSet sourceSet = GradleUtil.getSourceSet(
-			project, SourceSet.MAIN_SOURCE_SET_NAME);
-
-		return getSrcDir(sourceSet.getJava());
-	}
-
-	protected File getResourcesDir(Project project) {
-		SourceSet sourceSet = GradleUtil.getSourceSet(
-			project, SourceSet.MAIN_SOURCE_SET_NAME);
-
-		return getSrcDir(sourceSet.getResources());
-	}
-
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
-		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
-
-		Iterator<File> iterator = srcDirs.iterator();
-
-		return iterator.next();
 	}
 
 	private static final OsgiHelper _osgiHelper = new OsgiHelper();

@@ -18,8 +18,6 @@ import com.liferay.gradle.util.GradleUtil;
 
 import java.io.File;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Action;
@@ -29,12 +27,10 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.plugins.WarPlugin;
-import org.gradle.api.plugins.WarPluginConvention;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.JavaCompile;
@@ -175,11 +171,8 @@ public class JspCPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					SourceSet sourceSet = GradleUtil.getSourceSet(
-						compileJSPTask.getProject(),
-						SourceSet.MAIN_SOURCE_SET_NAME);
-
-					return getSrcDir(sourceSet.getResources());
+					return GradleUtil.getMainResourcesDir(
+						compileJSPTask.getProject());
 				}
 
 			});
@@ -208,23 +201,10 @@ public class JspCPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					WarPluginConvention warPluginConvention =
-						GradleUtil.getConvention(
-							compileJSPTask.getProject(),
-							WarPluginConvention.class);
-
-					return warPluginConvention.getWebAppDir();
+					return GradleUtil.getWebAppDir(compileJSPTask.getProject());
 				}
 
 			});
-	}
-
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
-		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
-
-		Iterator<File> iterator = srcDirs.iterator();
-
-		return iterator.next();
 	}
 
 }

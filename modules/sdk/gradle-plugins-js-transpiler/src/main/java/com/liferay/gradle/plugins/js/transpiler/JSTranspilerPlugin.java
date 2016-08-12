@@ -22,8 +22,6 @@ import com.liferay.gradle.util.GradleUtil;
 import java.io.File;
 
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Action;
@@ -31,7 +29,6 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
@@ -229,7 +226,8 @@ public class JSTranspilerPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getSrcDir(sourceSet.getResources());
+					File resourcesDir = GradleUtil.getSrcDir(
+						sourceSet.getResources());
 
 					return new File(resourcesDir, "META-INF/resources");
 				}
@@ -254,14 +252,6 @@ public class JSTranspilerPlugin implements Plugin<Project> {
 			project, JavaPlugin.CLASSES_TASK_NAME);
 
 		classesTask.dependsOn(transpileJSTask);
-	}
-
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
-		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
-
-		Iterator<File> iterator = srcDirs.iterator();
-
-		return iterator.next();
 	}
 
 }

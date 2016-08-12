@@ -19,15 +19,12 @@ import com.liferay.gradle.util.GradleUtil;
 
 import java.io.File;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
@@ -133,7 +130,7 @@ public class LangMergerPlugin implements Plugin<Project> {
 	}
 
 	protected File getContentDir(SourceSet sourceSet) {
-		File resourcesDir = getSrcDir(sourceSet.getResources());
+		File resourcesDir = GradleUtil.getSrcDir(sourceSet.getResources());
 
 		return new File(resourcesDir, "content");
 	}
@@ -169,14 +166,6 @@ public class LangMergerPlugin implements Plugin<Project> {
 		}
 
 		return langProject;
-	}
-
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
-		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
-
-		Iterator<File> iterator = srcDirs.iterator();
-
-		return iterator.next();
 	}
 
 	private static final Logger _logger = Logging.getLogger(

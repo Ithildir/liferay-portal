@@ -18,8 +18,6 @@ import com.liferay.gradle.util.GradleUtil;
 
 import java.io.File;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Action;
@@ -30,7 +28,6 @@ import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.plugins.osgi.OsgiHelper;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
@@ -148,7 +145,8 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					File resourcesDir = getSrcDir(sourceSet.getResources());
+					File resourcesDir = GradleUtil.getSrcDir(
+						sourceSet.getResources());
 
 					return new File(resourcesDir, "META-INF/maven");
 				}
@@ -196,7 +194,7 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return getSrcDir(sourceSet.getJava());
+					return GradleUtil.getSrcDir(sourceSet.getJava());
 				}
 
 			});
@@ -253,14 +251,6 @@ public class MavenPluginBuilderPlugin implements Plugin<Project> {
 		Upload upload, BuildPluginDescriptorTask buildPluginDescriptorTask) {
 
 		upload.dependsOn(buildPluginDescriptorTask);
-	}
-
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
-		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
-
-		Iterator<File> iterator = srcDirs.iterator();
-
-		return iterator.next();
 	}
 
 	private static final OsgiHelper _osgiHelper = new OsgiHelper();
