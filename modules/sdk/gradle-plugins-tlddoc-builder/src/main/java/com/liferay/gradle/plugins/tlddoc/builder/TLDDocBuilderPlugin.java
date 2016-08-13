@@ -212,6 +212,7 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 		tlddocTask.setSource(
 			new Callable<Iterable<File>>() {
 
+				@Override
 				public Iterable<File> call() throws Exception {
 					return getResourceDirs(project);
 				}
@@ -229,6 +230,7 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 		validateSchemaTask.setSource(
 			new Callable<Iterable<File>>() {
 
+				@Override
 				public Iterable<File> call() throws Exception {
 					return getResourceDirs(project);
 				}
