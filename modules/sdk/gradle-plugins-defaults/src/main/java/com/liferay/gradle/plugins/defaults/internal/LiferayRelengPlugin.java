@@ -18,7 +18,6 @@ import com.liferay.gradle.plugins.cache.CacheExtension;
 import com.liferay.gradle.plugins.cache.CachePlugin;
 import com.liferay.gradle.plugins.cache.WriteDigestTask;
 import com.liferay.gradle.plugins.cache.task.TaskCache;
-import com.liferay.gradle.plugins.cache.task.TaskCacheApplicator;
 import com.liferay.gradle.plugins.change.log.builder.BuildChangeLogTask;
 import com.liferay.gradle.plugins.change.log.builder.ChangeLogBuilderPlugin;
 import com.liferay.gradle.plugins.defaults.LiferayOSGiDefaultsPlugin;
@@ -210,9 +209,7 @@ public class LiferayRelengPlugin implements Plugin<Project> {
 
 						for (TaskCache taskCache : cacheExtension.getTasks()) {
 							printArtifactPublishCommandsTask.prepNextFiles(
-								new File(
-									taskCache.getCacheDir(),
-									TaskCacheApplicator.DIGEST_FILE_NAME));
+								new File(taskCache.getCacheDir(), ".digest"));
 						}
 					}
 
