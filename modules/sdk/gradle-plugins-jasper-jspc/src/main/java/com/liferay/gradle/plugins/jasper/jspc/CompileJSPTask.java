@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.InputFiles;
@@ -86,7 +87,7 @@ public class CompileJSPTask extends JavaExec {
 				byteArrayOutputStream.writeTo(taskErrorOutput);
 			}
 			catch (IOException ioe) {
-				throw new GradleException(ioe.getMessage(), ioe);
+				throw new UncheckedIOException(ioe);
 			}
 
 			setErrorOutput(taskErrorOutput);

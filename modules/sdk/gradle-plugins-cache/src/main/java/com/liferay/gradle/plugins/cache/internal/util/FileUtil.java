@@ -133,7 +133,7 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 			sortedFiles = flattenAndSort(files);
 		}
 		catch (IOException ioe) {
-			throw new GradleException("Unable to flatten files", ioe);
+			throw new UncheckedIOException("Unable to flatten files", ioe);
 		}
 
 		if (excludeIgnoredFiles) {
@@ -236,8 +236,7 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 			return canonicalPath;
 		}
 		catch (IOException ioe) {
-			throw new UncheckedIOException(
-				"Unable to get canonical path of " + file, ioe);
+			throw new UncheckedIOException(ioe);
 		}
 	}
 

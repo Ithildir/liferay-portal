@@ -23,6 +23,7 @@ import com.liferay.gradle.util.Validator;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -206,7 +207,7 @@ public class TaskCacheApplicator {
 				StandardCharsets.UTF_8);
 		}
 		catch (IOException ioe) {
-			throw new GradleException("Unable to read digest file", ioe);
+			throw new UncheckedIOException(ioe);
 		}
 	}
 
@@ -276,7 +277,7 @@ public class TaskCacheApplicator {
 			}
 		}
 		catch (IOException ioe) {
-			throw new GradleException("Unable to write digest file", ioe);
+			throw new UncheckedIOException(ioe);
 		}
 	}
 

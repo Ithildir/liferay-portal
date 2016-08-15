@@ -30,6 +30,7 @@ import groovy.lang.Closure;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -39,7 +40,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.gradle.api.Action;
-import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -134,8 +134,7 @@ public class LiferayThemePlugin implements Plugin<Project> {
 							json.getBytes(StandardCharsets.UTF_8));
 					}
 					catch (IOException ioe) {
-						throw new GradleException(
-							"Unable to write " + liferayThemeJsonFile, ioe);
+						throw new UncheckedIOException(ioe);
 					}
 				}
 
