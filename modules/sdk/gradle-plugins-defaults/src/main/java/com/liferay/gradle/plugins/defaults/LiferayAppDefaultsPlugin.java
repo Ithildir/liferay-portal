@@ -68,12 +68,12 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 
 		GradleUtil.applyPlugin(project, AppJavadocBuilderPlugin.class);
 
-		configureAppJavadocBuilder(project);
-		configureProject(project, appDescription, appVersion);
-		configureTaskAppJavadoc(project, appTitle, appVersion);
+		_configureAppJavadocBuilder(project);
+		_configureProject(project, appDescription, appVersion);
+		_configureTaskAppJavadoc(project, appTitle, appVersion);
 	}
 
-	protected void configureAppJavadocBuilder(Project project) {
+	private void _configureAppJavadocBuilder(Project project) {
 		AppJavadocBuilderExtension appJavadocBuilderExtension =
 			GradleUtil.getExtension(project, AppJavadocBuilderExtension.class);
 
@@ -82,13 +82,13 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 
 				@SuppressWarnings("unused")
 				public String doCall(Project subproject) {
-					return getAppJavadocGroupName(subproject);
+					return _getAppJavadocGroupName(subproject);
 				}
 
 			});
 	}
 
-	protected void configureProject(
+	private void _configureProject(
 		Project project, String description, String version) {
 
 		if (Validator.isNotNull(description)) {
@@ -100,7 +100,7 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		}
 	}
 
-	protected void configureTaskAppJavadoc(
+	private void _configureTaskAppJavadoc(
 		Project project, String appTitle, String appVersion) {
 
 		if (Validator.isNull(appTitle) || Validator.isNull(appVersion)) {
@@ -115,7 +115,7 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		javadoc.setTitle(title);
 	}
 
-	protected String getAppJavadocGroupName(Project project) {
+	private String _getAppJavadocGroupName(Project project) {
 		String groupName = project.getDescription();
 
 		if (Validator.isNull(groupName)) {
