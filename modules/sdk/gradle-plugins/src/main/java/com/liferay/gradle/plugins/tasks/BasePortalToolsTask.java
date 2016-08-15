@@ -36,8 +36,6 @@ import org.gradle.process.JavaExecSpec;
 public abstract class BasePortalToolsTask extends JavaExec {
 
 	public BasePortalToolsTask() {
-		project = getProject();
-
 		addConfiguration();
 	}
 
@@ -66,7 +64,8 @@ public abstract class BasePortalToolsTask extends JavaExec {
 
 	@Override
 	public FileCollection getClasspath() {
-		return GradleUtil.getConfiguration(project, getConfigurationName());
+		return GradleUtil.getConfiguration(
+			getProject(), getConfigurationName());
 	}
 
 	@Override
@@ -88,6 +87,8 @@ public abstract class BasePortalToolsTask extends JavaExec {
 	}
 
 	protected Configuration addConfiguration() {
+		Project project = getProject();
+
 		ConfigurationContainer configurationContainer =
 			project.getConfigurations();
 
@@ -140,12 +141,14 @@ public abstract class BasePortalToolsTask extends JavaExec {
 		String group, String name, String version, boolean transitive) {
 
 		GradleUtil.addDependency(
-			project, getConfigurationName(), group, name, version, transitive);
+			getProject(), getConfigurationName(), group, name, version,
+			transitive);
 	}
 
 	protected void doExec(List<String> args) {
 		super.setArgs(args);
-		super.setClasspath(FileUtil.shrinkClasspath(project, getClasspath()));
+		super.setClasspath(
+			FileUtil.shrinkClasspath(getProject(), getClasspath()));
 		super.setErrorOutput(System.err);
 
 		super.exec();
@@ -156,7 +159,5 @@ public abstract class BasePortalToolsTask extends JavaExec {
 	}
 
 	protected abstract String getToolName();
-
-	protected final Project project;
 
 }
