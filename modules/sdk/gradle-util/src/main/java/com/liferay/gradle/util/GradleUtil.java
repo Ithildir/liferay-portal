@@ -38,7 +38,7 @@ import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.artifacts.ResolvableDependencies;
+import org.gradle.api.artifacts.DependencySet;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileTree;
@@ -175,29 +175,19 @@ public class GradleUtil {
 		project.apply(args);
 	}
 
+	/**
+	 * @deprecated As of 1.1.0
+	 */
+	@Deprecated
 	public static void executeIfEmpty(
 		final Configuration configuration, final Action<Configuration> action) {
 
-		ResolvableDependencies resolvableDependencies =
-			configuration.getIncoming();
-
-		resolvableDependencies.beforeResolve(
-			new Action<ResolvableDependencies>() {
+		configuration.defaultDependencies(
+			new Action<DependencySet>() {
 
 				@Override
-				public void execute(
-					ResolvableDependencies resolvableDependencies) {
-
-					Set<Dependency> dependencies =
-						configuration.getDependencies();
-					Set<Configuration> parentConfigurations =
-						configuration.getExtendsFrom();
-
-					if (dependencies.isEmpty() &&
-						parentConfigurations.isEmpty()) {
-
-						action.execute(configuration);
-					}
+				public void execute(DependencySet dependencySet) {
+					action.execute(configuration);
 				}
 
 			});
