@@ -50,6 +50,7 @@ import org.gradle.api.Project;
 import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
+import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
@@ -280,21 +281,22 @@ public class FileUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * @deprecated As of 1.1.0
+	 */
+	@Deprecated
 	public static Properties readProperties(File file) {
-		Properties properties = new Properties();
-
-		if (file.exists()) {
-			try (FileInputStream fileInputStream = new FileInputStream(file)) {
-				properties.load(fileInputStream);
-			}
-			catch (IOException ioe) {
-				throw new UncheckedIOException(ioe);
-			}
+		if (!file.exists()) {
+			return new Properties();
 		}
 
-		return properties;
+		return GUtil.loadProperties(file);
 	}
 
+	/**
+	 * @deprecated As of 1.1.0
+	 */
+	@Deprecated
 	public static Properties readProperties(Project project, String fileName) {
 		File file = project.file(fileName);
 
