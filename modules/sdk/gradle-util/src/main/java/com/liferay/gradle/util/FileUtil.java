@@ -172,9 +172,7 @@ public class FileUtil {
 	}
 
 	public static String getAbsolutePath(File file) {
-		String absolutePath = file.getAbsolutePath();
-
-		return absolutePath.replace('\\', '/');
+		return _normalizeSeparatorChar(file.getAbsolutePath());
 	}
 
 	public static char getDriveLetter(File file) {
@@ -187,6 +185,16 @@ public class FileUtil {
 		char driveLetter = absolutePath.charAt(0);
 
 		return Character.toLowerCase(driveLetter);
+	}
+
+	public static String getRelativePath(File file, File startFile) {
+		String relativePath = relativize(file, startFile);
+
+		return _normalizeSeparatorChar(relativePath);
+	}
+
+	public static String getRelativePath(Project project, File file) {
+		return _normalizeSeparatorChar(project.relativePath(file));
 	}
 
 	public static boolean isChild(File file, File parentFile) {
@@ -652,6 +660,14 @@ public class FileUtil {
 
 		antBuilder.invokeMethod(
 			"manifestclasspath", new Object[] {args, closure});
+	}
+
+	private static String _normalizeSeparatorChar(String path) {
+		if (File.separatorChar != '/') {
+			path = path.replace(File.separatorChar, '/');
+		}
+
+		return path;
 	}
 
 	private static final File _TMP_DIR = new File(
