@@ -704,8 +704,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 					if (!deleted && logger.isWarnEnabled()) {
 						logger.warn(
-							"Unable to delete old cached version in " +
-								oldCachedVersionDir);
+							"Unable to delete old cached version in {}",
+							oldCachedVersionDir);
 					}
 				}
 

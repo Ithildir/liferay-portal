@@ -37,7 +37,6 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputFiles;
 import org.gradle.api.tasks.SkipWhenEmpty;
@@ -100,6 +99,8 @@ public abstract class BaseMergeTask extends DefaultTask {
 
 	@TaskAction
 	public void merge() throws IOException {
+		Logger logger = getLogger();
+
 		File destinationDir = getDestinationDir();
 		FileCollection sourceDirs = getSourceDirs();
 
@@ -130,18 +131,19 @@ public abstract class BaseMergeTask extends DefaultTask {
 					sourceFile.toPath(), destinationFile.toPath(),
 					StandardCopyOption.REPLACE_EXISTING);
 
-				if (_logger.isInfoEnabled()) {
-					_logger.info(
-						"Copied " + sourceFile + " into " + destinationFile);
+				if (logger.isInfoEnabled()) {
+					logger.info(
+						"Copied {} into {}", sourceFile, destinationFile);
 				}
 			}
 			else {
 				merge(sourceFiles, destinationFile);
 
-				if (_logger.isInfoEnabled()) {
-					_logger.info(
-						"Merged " + CollectionUtils.join(", ", sourceFiles) +
-							" into " + destinationFile);
+				if (logger.isInfoEnabled()) {
+					logger.info(
+						"Merged {} into {}",
+						CollectionUtils.join(", ", sourceFiles),
+						destinationFile);
 				}
 			}
 		}
@@ -184,9 +186,6 @@ public abstract class BaseMergeTask extends DefaultTask {
 
 	protected abstract void merge(Set<File> sourceFiles, File destinationFile)
 		throws IOException;
-
-	private static final Logger _logger = Logging.getLogger(
-		BaseMergeTask.class);
 
 	private Object _destinationDir;
 	private final Set<Object> _sourceDirs = new LinkedHashSet<>();

@@ -53,7 +53,7 @@ public class TaskCacheApplicator {
 		String currentDigest = getCurrentDigest(taskCache);
 
 		if (logger.isInfoEnabled()) {
-			logger.info("Current digest is " + currentDigest);
+			logger.info("Current digest is {}", currentDigest);
 		}
 
 		if (cacheExtension.isForcedCache()) {
@@ -67,7 +67,7 @@ public class TaskCacheApplicator {
 		}
 		else if (taskCache.isDisabled()) {
 			if (logger.isLifecycleEnabled()) {
-				logger.lifecycle("Cache for " + task + " is disabled");
+				logger.lifecycle("Cache for {} is disabled", task);
 			}
 		}
 		else {
@@ -78,7 +78,7 @@ public class TaskCacheApplicator {
 					logger.info("No cached digest has been found");
 				}
 				else {
-					logger.info("Cached digest is " + cachedDigest);
+					logger.info("Cached digest is {}", cachedDigest);
 				}
 			}
 
@@ -103,7 +103,7 @@ public class TaskCacheApplicator {
 		Logger logger = task.getLogger();
 
 		if (logger.isInfoEnabled()) {
-			logger.info(task + " is out-of-date");
+			logger.info("{} is out-of-date", task);
 		}
 
 		Copy copy = createSaveCacheTask(taskCache);
@@ -125,7 +125,7 @@ public class TaskCacheApplicator {
 		Logger logger = task.getLogger();
 
 		if (logger.isInfoEnabled()) {
-			logger.info(task + " is up-to-date");
+			logger.info("{} is up-to-date", task);
 		}
 
 		removeSkippedTaskDependencies(taskCache, task);
@@ -229,7 +229,7 @@ public class TaskCacheApplicator {
 			taskDependencies.clear();
 
 			if (logger.isInfoEnabled()) {
-				logger.info("Removed all dependencies from " + task);
+				logger.info("Removed all dependencies from {}", task);
 			}
 		}
 		else {
@@ -246,14 +246,14 @@ public class TaskCacheApplicator {
 				if (removed) {
 					if (logger.isInfoEnabled()) {
 						logger.info(
-							"Removed dependency " + taskDependency + " from " +
-								task);
+							"Removed dependency {} from {}", taskDependency,
+							task);
 					}
 				}
 				else if (logger.isWarnEnabled()) {
 					logger.warn(
-						"Unable to remove skipped task dependency " +
-							taskDependency);
+						"Unable to remove skipped task dependency {}",
+						taskDependency);
 				}
 			}
 		}
@@ -271,7 +271,7 @@ public class TaskCacheApplicator {
 				digestFile.toPath(), digest.getBytes(StandardCharsets.UTF_8));
 
 			if (logger.isInfoEnabled()) {
-				logger.info("Updated digest file to " + digest);
+				logger.info("Updated digest file to {}", digest);
 			}
 		}
 		catch (IOException ioe) {

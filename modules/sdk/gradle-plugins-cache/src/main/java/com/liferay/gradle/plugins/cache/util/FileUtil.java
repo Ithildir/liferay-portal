@@ -110,7 +110,7 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 		}
 
 		if (_logger.isInfoEnabled()) {
-			_logger.info("Digest of " + file + " is " + digest);
+			_logger.info("Digest of {} is {}", file, digest);
 		}
 
 		return digest;
@@ -160,8 +160,7 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 		sb.setLength(sb.length() - 1);
 
 		if (_logger.isInfoEnabled() && (clock != null)) {
-			_logger.info(
-				"Getting the digest took " + clock.getTimeInMs() + " ms");
+			_logger.info("Getting the digest took {} ms", clock.getTimeInMs());
 		}
 
 		return sb.toString();

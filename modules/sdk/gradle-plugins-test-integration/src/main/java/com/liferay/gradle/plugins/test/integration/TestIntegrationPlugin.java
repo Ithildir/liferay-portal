@@ -49,7 +49,6 @@ import org.gradle.api.file.FileTree;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.plugins.WarPlugin;
@@ -248,10 +247,11 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 				}
 
 				if (started) {
-					if (_logger.isDebugEnabled()) {
-						_logger.debug(
-							"Application server " + binDir +
-								" is already started");
+					Logger logger = startTestableTomcatTask.getLogger();
+
+					if (logger.isDebugEnabled()) {
+						logger.debug(
+							"Application server {} is already started", binDir);
 					}
 
 					Project project = startTestableTomcatTask.getProject();
@@ -261,10 +261,11 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 					StartParameter startParameter = gradle.getStartParameter();
 
 					if (startParameter.isParallelProjectExecutionEnabled()) {
-						if (_logger.isDebugEnabled()) {
-							_logger.debug(
-								"Waiting for application server " + binDir +
-									" to be reachable");
+						if (logger.isDebugEnabled()) {
+							logger.debug(
+								"Waiting for application server {} to be " +
+									"reachable",
+								binDir);
 						}
 
 						startTestableTomcatTask.waitForReachable();
@@ -341,11 +342,13 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 				_startedAppServersReentrantLock.lock();
 
 				try {
+					Logger logger = stopTestableTomcatTask.getLogger();
+
 					if (!_startedAppServerBinDirs.contains(binDir)) {
-						if (_logger.isDebugEnabled()) {
-							_logger.debug(
-								"Application server " + binDir +
-									" is already stopped");
+						if (logger.isDebugEnabled()) {
+							logger.debug(
+								"Application server {} is already stopped",
+								binDir);
 						}
 
 						throw new StopExecutionException();
@@ -355,11 +358,11 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 						binDir, false);
 
 					if (originalCounter > 1) {
-						if (_logger.isDebugEnabled()) {
-							_logger.debug(
-								"Application server " + binDir +
-									" cannot be stopped now, still " +
-										(originalCounter - 1) + " to execute");
+						if (logger.isDebugEnabled()) {
+							logger.debug(
+								"Application server {} cannot be stopped " +
+									"now, still {} to execute",
+								binDir, (originalCounter - 1));
 						}
 
 						throw new StopExecutionException();
@@ -660,9 +663,6 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 
 	private static final String _SKIP_MANAGED_APP_SERVER_FILE_NAME =
 		"skip.managed.app.server";
-
-	private static final Logger _logger = Logging.getLogger(
-		TestIntegrationPlugin.class);
 
 	private static final Set<File> _startedAppServerBinDirs = new HashSet<>();
 	private static final ReentrantLock _startedAppServersReentrantLock =

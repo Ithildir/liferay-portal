@@ -26,7 +26,6 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.tasks.SourceSet;
@@ -74,6 +73,8 @@ public class LangMergerPlugin implements Plugin<Project> {
 
 		final Project project = mergePropertiesTask.getProject();
 
+		Logger logger = project.getLogger();
+
 		final SourceSet sourceSet = GradleUtil.getSourceSet(
 			project, SourceSet.MAIN_SOURCE_SET_NAME);
 
@@ -93,8 +94,8 @@ public class LangMergerPlugin implements Plugin<Project> {
 		final Project langProject = getLangProject(project);
 
 		if (langProject != null) {
-			if (_logger.isInfoEnabled()) {
-				_logger.info("Using " + langProject + " as merge source");
+			if (logger.isInfoEnabled()) {
+				logger.info("Using {} as merge source", langProject);
 			}
 
 			mergePropertiesTask.setSourceDirs(
@@ -118,8 +119,8 @@ public class LangMergerPlugin implements Plugin<Project> {
 
 				});
 		}
-		else if (_logger.isInfoEnabled()) {
-			_logger.info(
+		else if (logger.isInfoEnabled()) {
+			logger.info(
 				"Unable to find a language project to use as merge source");
 		}
 
@@ -142,11 +143,13 @@ public class LangMergerPlugin implements Plugin<Project> {
 			return null;
 		}
 
+		Logger logger = project.getLogger();
+
 		String langProjectPath =
 			parentProject.getPath() + ":" + parentProject.getName() + "-lang";
 
-		if (_logger.isDebugEnabled()) {
-			_logger.debug("Looking for " + langProjectPath);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Looking for {}", langProjectPath);
 		}
 
 		Project langProject = project.findProject(langProjectPath);
@@ -157,8 +160,8 @@ public class LangMergerPlugin implements Plugin<Project> {
 			if (index != -1) {
 				langProjectPath = langProjectPath.substring(index);
 
-				if (_logger.isDebugEnabled()) {
-					_logger.debug("Looking for " + langProjectPath);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Looking for {}", langProjectPath);
 				}
 
 				langProject = project.findProject(langProjectPath);
@@ -167,8 +170,5 @@ public class LangMergerPlugin implements Plugin<Project> {
 
 		return langProject;
 	}
-
-	private static final Logger _logger = Logging.getLogger(
-		LangMergerPlugin.class);
 
 }

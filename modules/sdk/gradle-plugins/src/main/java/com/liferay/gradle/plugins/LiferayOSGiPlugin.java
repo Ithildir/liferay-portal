@@ -332,9 +332,13 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 					}
 
 					if (!deployedPluginDir.exists()) {
-						_logger.warn(
-							"Unable to automatically update web.xml in " +
+						Logger logger = directDeployTask.getLogger();
+
+						if (logger.isWarnEnabled()) {
+							logger.warn(
+								"Unable to automatically update web.xml in {}",
 								jar.getArchivePath());
+						}
 
 						return;
 					}
@@ -947,9 +951,6 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 
 	private static final String _CACHE_PLUGIN_ID = "com.liferay.cache";
 
-	private static final Logger _logger = Logging.getLogger(
-		LiferayOSGiPlugin.class);
-
 	private static class LiferayJarBuilder extends JarBuilder {
 
 		@Override
@@ -1076,6 +1077,9 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 
 			return contextClassLoader;
 		}
+
+		private static final Logger _logger = Logging.getLogger(
+			LiferayJarBuilder.class);
 
 		private final Set<File> _classpathFiles = new HashSet<>();
 		private ClassLoader _contextClassLoader;
