@@ -155,10 +155,9 @@ public class IdeaDefaultsPlugin extends BaseDefaultsPlugin<IdeaPlugin> {
 
 				rootElement.setAttribute("relative", "/");
 
-				String url = project.relativePath(resourcesDir);
+				String url = FileUtil.getRelativePath(project, resourcesDir);
 
-				rootElement.setAttribute(
-					"url", "file://$MODULE_DIR$/" + url.replace('\\', '/'));
+				rootElement.setAttribute("url", "file://$MODULE_DIR$/" + url);
 
 				webrootsElement.appendChild(rootElement);
 			}

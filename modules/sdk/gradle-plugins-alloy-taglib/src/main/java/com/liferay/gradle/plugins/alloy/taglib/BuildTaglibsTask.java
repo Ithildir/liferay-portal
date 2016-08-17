@@ -14,6 +14,7 @@
 
 package com.liferay.gradle.plugins.alloy.taglib;
 
+import com.liferay.gradle.util.FileUtil;
 import com.liferay.gradle.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 
@@ -166,11 +167,10 @@ public class BuildTaglibsTask extends JavaExec {
 			getSystemProperties());
 
 		systemProperties.put(
-			"tagbuilder.components.xml",
-			getRelativePaths(getComponentsXmlFiles()));
+			"tagbuilder.components.xml", _relativize(getComponentsXmlFiles()));
 		systemProperties.put("tagbuilder.copyright.year", getCopyrightYear());
 		systemProperties.put(
-			"tagbuilder.java.dir", getRelativePath(getJavaDir()) + "/");
+			"tagbuilder.java.dir", _relativize(getJavaDir()) + "/");
 		systemProperties.put("tagbuilder.java.package", getJavaPackage());
 		systemProperties.put(
 			"tagbuilder.jsp.common.init.path", getJspCommonInitPath());
@@ -184,8 +184,7 @@ public class BuildTaglibsTask extends JavaExec {
 		systemProperties.put("tagbuilder.jsp.dir", jspDirName);
 
 		systemProperties.put(
-			"tagbuilder.jsp.parent.dir",
-			getRelativePath(getJspParentDir()) + "/");
+			"tagbuilder.jsp.parent.dir", _relativize(getJspParentDir()) + "/");
 
 		String osgiModuleSymbolicName = getOsgiModuleSymbolicName();
 
@@ -196,7 +195,7 @@ public class BuildTaglibsTask extends JavaExec {
 
 		systemProperties.put("tagbuilder.templates.dir", getTemplatesDirName());
 		systemProperties.put(
-			"tagbuilder.tld.dir", getRelativePath(getTldDir()) + "/");
+			"tagbuilder.tld.dir", _relativize(getTldDir()) + "/");
 
 		return systemProperties;
 	}
@@ -210,29 +209,23 @@ public class BuildTaglibsTask extends JavaExec {
 
 		StringBuilder sb = new StringBuilder();
 
-		Project project = getProject();
-
 		for (File file : fileCollection) {
-			sb.append(project.relativePath(file));
+			sb.append(_relativize(file));
 			sb.append(',');
 		}
 
 		return sb.substring(0, sb.length() - 1);
 	}
 
-	protected String getRelativePath(File file) {
-		Project project = getProject();
-
-		String relativePath = project.relativePath(file);
-
-		return relativePath.replace('\\', '/');
+	private String _relativize(File file) {
+		return FileUtil.getRelativePath(file, getWorkingDir());
 	}
 
-	protected String getRelativePaths(Iterable<File> files) {
+	private String _relativize(Iterable<File> files) {
 		List<String> relativePaths = new ArrayList<>();
 
 		for (File file : files) {
-			relativePaths.add(getRelativePath(file));
+			relativePaths.add(_relativize(file));
 		}
 
 		return CollectionUtils.join(

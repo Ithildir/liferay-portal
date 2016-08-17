@@ -115,13 +115,7 @@ public class GitUtil {
 	private static String _relativize(File file, Repository repository) {
 		File gitDir = repository.getDirectory();
 
-		String relativePath = FileUtil.relativize(file, gitDir.getParentFile());
-
-		if (File.separatorChar == '\\') {
-			relativePath = relativePath.replace('\\', '/');
-		}
-
-		return relativePath;
+		return FileUtil.getRelativePath(file, gitDir.getParentFile());
 	}
 
 }

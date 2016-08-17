@@ -450,9 +450,7 @@ public class BuildServiceTask extends JavaExec {
 	}
 
 	private String _relativize(File file) {
-		String relativePath = FileUtil.relativize(file, getWorkingDir());
-
-		return relativePath.replace('\\', '/');
+		return FileUtil.getRelativePath(file, getWorkingDir());
 	}
 
 	private Object _apiDir;
