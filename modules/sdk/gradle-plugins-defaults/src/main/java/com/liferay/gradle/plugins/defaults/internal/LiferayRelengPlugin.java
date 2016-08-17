@@ -26,8 +26,8 @@ import com.liferay.gradle.plugins.defaults.internal.util.FileUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.defaults.tasks.PrintArtifactPublishCommandsTask;
 import com.liferay.gradle.plugins.defaults.tasks.ReplaceRegexTask;
-import com.liferay.gradle.plugins.defaults.tasks.WritePropertiesTask;
 import com.liferay.gradle.util.Validator;
+import com.liferay.gradle.util.tasks.WritePropertiesTask;
 
 import groovy.lang.Closure;
 
@@ -148,7 +148,7 @@ public class LiferayRelengPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return recordArtifactTask.getOutputFile();
+					return recordArtifactTask.getPropertiesFile();
 				}
 
 			});
@@ -294,7 +294,7 @@ public class LiferayRelengPlugin implements Plugin<Project> {
 
 		writePropertiesTask.setDescription(
 			"Records the commit ID and the artifact URLs.");
-		writePropertiesTask.setOutputFile(
+		writePropertiesTask.setPropertiesFile(
 			new File(destinationDir, "artifact.properties"));
 
 		Configuration configuration = GradleUtil.getConfiguration(
@@ -614,7 +614,7 @@ public class LiferayRelengPlugin implements Plugin<Project> {
 
 		String artifactGitId = null;
 
-		File artifactPropertiesFile = recordArtifactTask.getOutputFile();
+		File artifactPropertiesFile = recordArtifactTask.getPropertiesFile();
 
 		if (artifactPropertiesFile.exists()) {
 			Properties properties = GUtil.loadProperties(

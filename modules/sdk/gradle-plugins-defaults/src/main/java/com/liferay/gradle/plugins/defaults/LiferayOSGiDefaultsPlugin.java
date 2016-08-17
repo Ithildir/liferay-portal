@@ -30,7 +30,6 @@ import com.liferay.gradle.plugins.defaults.internal.util.IncrementVersionClosure
 import com.liferay.gradle.plugins.defaults.tasks.BaselineTask;
 import com.liferay.gradle.plugins.defaults.tasks.InstallCacheTask;
 import com.liferay.gradle.plugins.defaults.tasks.ReplaceRegexTask;
-import com.liferay.gradle.plugins.defaults.tasks.WritePropertiesTask;
 import com.liferay.gradle.plugins.extensions.LiferayExtension;
 import com.liferay.gradle.plugins.extensions.LiferayOSGiExtension;
 import com.liferay.gradle.plugins.jasper.jspc.JspCPlugin;
@@ -53,6 +52,7 @@ import com.liferay.gradle.util.Validator;
 import com.liferay.gradle.util.copy.ExcludeExistingFileAction;
 import com.liferay.gradle.util.copy.RenameDependencyClosure;
 import com.liferay.gradle.util.copy.ReplaceLeadingPathAction;
+import com.liferay.gradle.util.tasks.WritePropertiesTask;
 
 import groovy.json.JsonSlurper;
 
@@ -1667,7 +1667,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		if (recordArtifactTask != null) {
 			String artifactURL = null;
 
-			File artifactPropertiesFile = recordArtifactTask.getOutputFile();
+			File artifactPropertiesFile =
+				recordArtifactTask.getPropertiesFile();
 
 			if (artifactPropertiesFile.exists()) {
 				Properties properties = GUtil.loadProperties(

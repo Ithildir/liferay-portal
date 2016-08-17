@@ -18,8 +18,8 @@ import com.liferay.gradle.plugins.app.javadoc.builder.AppJavadocBuilderExtension
 import com.liferay.gradle.plugins.app.javadoc.builder.AppJavadocBuilderPlugin;
 import com.liferay.gradle.plugins.defaults.internal.LiferayRelengPlugin;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
-import com.liferay.gradle.plugins.defaults.tasks.WritePropertiesTask;
 import com.liferay.gradle.util.Validator;
+import com.liferay.gradle.util.tasks.WritePropertiesTask;
 
 import groovy.lang.Closure;
 
@@ -131,7 +131,8 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		if (recordArtifactTask != null) {
 			String artifactURL = null;
 
-			File artifactPropertiesFile = recordArtifactTask.getOutputFile();
+			File artifactPropertiesFile =
+				recordArtifactTask.getPropertiesFile();
 
 			if (artifactPropertiesFile.exists()) {
 				Properties properties = GUtil.loadProperties(

@@ -17,8 +17,8 @@ package com.liferay.gradle.plugins.workspace.internal.configurators;
 import com.liferay.gradle.plugins.workspace.WorkspaceExtension;
 import com.liferay.gradle.plugins.workspace.WorkspacePlugin;
 import com.liferay.gradle.plugins.workspace.internal.util.GradleUtil;
-import com.liferay.gradle.plugins.workspace.tasks.UpdatePropertiesTask;
 import com.liferay.gradle.util.FileUtil;
+import com.liferay.gradle.util.tasks.WritePropertiesTask;
 
 import groovy.lang.Closure;
 
@@ -60,7 +60,7 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 
 		_configureAnt(project);
 
-		UpdatePropertiesTask updatePropertiesTask = _addTaskUpdateProperties(
+		WritePropertiesTask updatePropertiesTask = _addTaskUpdateProperties(
 			project, workspaceExtension);
 
 		_addTaskBuild(project, updatePropertiesTask);
@@ -99,7 +99,7 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 	}
 
 	private Task _addTaskBuild(
-		Project project, UpdatePropertiesTask updatePropertiesTask) {
+		Project project, WritePropertiesTask updatePropertiesTask) {
 
 		Task task = project.task(LifecycleBasePlugin.BUILD_TASK_NAME);
 
@@ -109,13 +109,13 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 		return task;
 	}
 
-	private UpdatePropertiesTask _addTaskUpdateProperties(
+	private WritePropertiesTask _addTaskUpdateProperties(
 		Project project, final WorkspaceExtension workspaceExtension) {
 
-		UpdatePropertiesTask updatePropertiesTask = GradleUtil.addTask(
-			project, UPDATE_PROPERTIES_TASK_NAME, UpdatePropertiesTask.class);
+		WritePropertiesTask writePropertiesTask = GradleUtil.addTask(
+			project, UPDATE_PROPERTIES_TASK_NAME, WritePropertiesTask.class);
 
-		updatePropertiesTask.property(
+		writePropertiesTask.property(
 			"app.server.parent.dir",
 			new Callable<String>() {
 
@@ -127,16 +127,17 @@ public class PluginsProjectConfigurator extends BaseProjectConfigurator {
 
 			});
 
-		updatePropertiesTask.setDescription(
+		writePropertiesTask.setDescription(
 			"Updates the Plugins SDK build properties with the workspace " +
 				"configuration.");
+		writePropertiesTask.setOverwrite(false);
 
 		String userName = System.getProperty("user.name");
 
-		updatePropertiesTask.setPropertiesFile(
+		writePropertiesTask.setPropertiesFile(
 			"build." + userName + ".properties");
 
-		return updatePropertiesTask;
+		return writePropertiesTask;
 	}
 
 	private void _configureAnt(Project project) {
