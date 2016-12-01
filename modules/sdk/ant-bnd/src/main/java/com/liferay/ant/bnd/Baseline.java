@@ -40,6 +40,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * @author Raymond Augé
@@ -94,6 +96,20 @@ public abstract class Baseline {
 			aQute.bnd.differ.Baseline baseline = new aQute.bnd.differ.Baseline(
 				baselineProcessor, new DiffPluginImpl());
 
+			String actualNewerVersion = null;
+
+			if (_forceCalculatedVersion) {
+				actualNewerVersion = newJar.getVersion();
+
+				Version version = Version.parseVersion(oldJar.getVersion());
+
+				version = new Version(
+					version.getMajor(), version.getMinor(),
+					version.getMicro() + 1, version.getQualifier());
+
+				replaceVersion(newJar, version.toString());
+			}
+
 			Set<Info> infos = baseline.baseline(newJar, oldJar, null);
 
 			if (infos.isEmpty()) {
@@ -102,11 +118,12 @@ public abstract class Baseline {
 
 			BundleInfo bundleInfo = baseline.getBundleInfo();
 
-			if (_forceCalculatedVersion) {
-				bundleInfo.suggestedVersion = calculateVersion(
-					bundleInfo.olderVersion, infos);
+			if (actualNewerVersion != null) {
+				bundleInfo.newerVersion = Version.parseVersion(
+					actualNewerVersion);
 			}
-			else if (hasPackageRemoved(infos)) {
+
+			if (hasPackageRemoved(infos)) {
 				bundleInfo.suggestedVersion = new Version(
 					bundleInfo.olderVersion.getMajor() + 1, 0, 0);
 			}
@@ -281,48 +298,6 @@ public abstract class Baseline {
 
 	public void setSourceDir(File sourceDir) {
 		_sourceDir = sourceDir;
-	}
-
-	protected Version calculateVersion(Version version, Set<Info> infos)
-		throws IOException {
-
-		Delta highestDelta = Delta.UNCHANGED;
-
-		Set<String> movedPackages = getMovedPackages();
-
-		for (Info info : infos) {
-			Delta delta = info.packageDiff.getDelta();
-
-			if ((delta == Delta.ADDED) || (delta == Delta.CHANGED)) {
-				delta = Delta.MICRO;
-			}
-			else if (delta == Delta.REMOVED) {
-				if (movedPackages.contains(info.packageName)) {
-					delta = Delta.MICRO;
-				}
-				else {
-					delta = Delta.MAJOR;
-				}
-			}
-
-			if (delta.compareTo(highestDelta) > 0) {
-				highestDelta = delta;
-			}
-		}
-
-		if (highestDelta == Delta.MAJOR) {
-			version = new Version(version.getMajor() + 1, 0, 0);
-		}
-		else if (highestDelta == Delta.MINOR) {
-			version = new Version(
-				version.getMajor(), version.getMinor() + 1, 0);
-		}
-		else {
-			version = new Version(
-				version.getMajor(), version.getMinor(), version.getMicro() + 1);
-		}
-
-		return version;
 	}
 
 	protected void doDiff(Diff diff, StringBuilder sb) {
@@ -547,6 +522,20 @@ public abstract class Baseline {
 		}
 
 		_printWriter.println(output);
+	}
+
+	protected void replaceVersion(Jar jar, String version) throws Exception {
+		Manifest manifest = jar.getManifest();
+
+		if (manifest == null) {
+			throw new Exception(
+				"Unable to replace version in " + jar +
+					", as it has no manifest");
+		}
+
+		Attributes attributes = manifest.getMainAttributes();
+
+		attributes.putValue(Constants.BUNDLE_VERSION, version);
 	}
 
 	protected void reportLog(
