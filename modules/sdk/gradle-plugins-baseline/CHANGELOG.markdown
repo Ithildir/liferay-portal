@@ -10,5 +10,10 @@ extend `BaselineTask`. If `true`, the baselone check will fail if the
 ### Changed
 - [LPS-69470]: Update the [Liferay Ant BND] dependency to version 2.0.31.
 
+## 1.1.1 - 2016-12-01
+
+### Changed
+- [LPS-69470]: Update the [Liferay Ant BND] dependency to version 2.0.32.
+
 [Liferay Ant BND]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/ant-bnd
 [LPS-69470]: https://issues.liferay.com/browse/LPS-69470

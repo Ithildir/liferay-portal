@@ -696,6 +696,10 @@ version if the `com.liferay.app.defaults.plugin` is applied.
 
 ## 2.0.7 - 2016-11-30 [YANKED]
 
+### Added
+- [LPS-69470]: Set the `baseline.forceCalculatedVersion` property to `true`
+by default.
+
 ### Changed
 - [LPS-69470]: Update the [Liferay Gradle Plugins Baseline] dependency to
 version 1.1.0.
@@ -706,6 +710,8 @@ version 1.1.0.
 - [LPS-69488]: Update the [Liferay Gradle Plugins] dependency to version 3.0.44.
 
 ### Removed
+- [LPS-69470]: Remove default assignment of the
+`baseline.forceCalculatedVersion` property.
 - [LPS-69488]: Remove the default Node.js version configuration, as it has been
 moved to [Liferay Gradle Plugins].
 
@@ -727,6 +733,17 @@ moved to [Liferay Gradle Plugins].
 
 ### Changed
 - [LPS-69501]: Update the [Liferay Gradle Plugins] dependency to version 3.0.47.
+
+## 2.1.2 - 2016-12-05
+
+### Added
+- [LPS-69470]: Add the ability to configure the [`forceCalculatedVersion`]
+property in the `baseline` task by setting the project property
+`baseline.force.calculated.version`.
+
+### Changed
+- [LPS-69470]: Update the [Liferay Gradle Plugins Baseline] dependency to
+version 1.1.1.
 
 [Liferay CDN]: https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public
 [Liferay Gradle Plugins]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins
