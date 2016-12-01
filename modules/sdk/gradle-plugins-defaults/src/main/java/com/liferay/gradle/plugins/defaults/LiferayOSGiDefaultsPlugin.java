@@ -1764,6 +1764,11 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	private void _configureTaskBaseline(BaselineTask baselineTask) {
 		Project project = baselineTask.getProject();
 
+		boolean forceCalculatedVersion = GradleUtil.getProperty(
+			project, "baseline.force.calculated.version", false);
+
+		baselineTask.setForceCalculatedVersion(forceCalculatedVersion);
+
 		String reportLevel = GradleUtil.getProperty(
 			project, "baseline.jar.report.level", "standard");
 
