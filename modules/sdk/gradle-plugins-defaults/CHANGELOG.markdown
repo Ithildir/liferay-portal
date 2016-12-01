@@ -273,7 +273,7 @@ by default.
 
 ### Added
 - [LPS-66906]: Override the [`sass-binary-path`](https://github.com/sass/node-sass#binary-configuration-parameters)
-argument in the `npmInstall` task with the value of the project property
+property in the `npmInstall` task with the value of the project property
 `nodejs.npm.ci.sass.binary.site` when using Jenkins.
 
 ### Changed

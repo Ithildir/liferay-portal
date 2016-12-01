@@ -214,7 +214,7 @@ version 2.0.0.
 
 ### Added
 - [LPS-66906]: Add the ability to configure the [`sass-binary-path`](https://github.com/sass/node-sass#binary-configuration-parameters)
-argument in the `npmInstall` task by setting the project property
+property in the `npmInstall` task by setting the project property
 `nodejs.npm.sass.binary.site`.
 
 ### Changed
