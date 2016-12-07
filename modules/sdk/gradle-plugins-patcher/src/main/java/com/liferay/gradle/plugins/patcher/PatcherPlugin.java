@@ -55,7 +55,7 @@ public class PatcherPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(PatchTask patchTask) {
-					configureTaskPatchPatchedSrcDirMappings(patchTask);
+					_configureTaskPatchPatchedSrcDirMappings(patchTask);
 
 					Project project = patchTask.getProject();
 
@@ -64,7 +64,7 @@ public class PatcherPlugin implements Plugin<Project> {
 
 					javaCompile.dependsOn(patchTask);
 
-					Copy copy = addTaskCopyOriginalLibClasses(patchTask);
+					Copy copy = _addTaskCopyOriginalLibClasses(patchTask);
 
 					Task classesTask = GradleUtil.getTask(
 						project, JavaPlugin.CLASSES_TASK_NAME);
@@ -75,7 +75,7 @@ public class PatcherPlugin implements Plugin<Project> {
 			});
 	}
 
-	protected Copy addTaskCopyOriginalLibClasses(final PatchTask patchTask) {
+	private Copy _addTaskCopyOriginalLibClasses(final PatchTask patchTask) {
 		String taskName =
 			"copy" + StringUtil.capitalize(patchTask.getName()) +
 				"OriginalLibClasses";
@@ -153,9 +153,7 @@ public class PatcherPlugin implements Plugin<Project> {
 		return copy;
 	}
 
-	protected void configureTaskPatchPatchedSrcDirMappings(
-		PatchTask patchTask) {
-
+	private void _configureTaskPatchPatchedSrcDirMappings(PatchTask patchTask) {
 		final SourceSet sourceSet = GradleUtil.getSourceSet(
 			patchTask.getProject(), SourceSet.MAIN_SOURCE_SET_NAME);
 
@@ -165,7 +163,7 @@ public class PatcherPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return getSrcDir(sourceSet.getJava());
+					return _getSrcDir(sourceSet.getJava());
 				}
 
 			});
@@ -176,13 +174,13 @@ public class PatcherPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					return getSrcDir(sourceSet.getResources());
+					return _getSrcDir(sourceSet.getResources());
 				}
 
 			});
 	}
 
-	protected File getSrcDir(SourceDirectorySet sourceDirectorySet) {
+	private File _getSrcDir(SourceDirectorySet sourceDirectorySet) {
 		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
 
 		Iterator<File> iterator = srcDirs.iterator();
