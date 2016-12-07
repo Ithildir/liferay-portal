@@ -563,7 +563,7 @@ public class PatchTask extends DefaultTask {
 		_fixPatchCrLfArgs.put("eol", FixCrLfFilter.CrLf.newInstance("lf"));
 		_fixPatchCrLfArgs.put("fixlast", false);
 
-		_fixPatchCrLfArgs.put(
+		_fixSrcCrLfArgs.put(
 			"eof", FixCrLfFilter.AddAsisRemove.newInstance("asis"));
 		_fixSrcCrLfArgs.put("eol", FixCrLfFilter.CrLf.newInstance("lf"));
 		_fixSrcCrLfArgs.put("fixlast", false);
