@@ -376,7 +376,7 @@ public class PatchTask extends DefaultTask {
 
 				@Override
 				public void execute(CopySpec copySpec) {
-					copySpec.filter(_fixCrLfArgs, FixCrLfFilter.class);
+					copySpec.filter(_fixPatchCrLfArgs, FixCrLfFilter.class);
 					copySpec.from(getPatchFiles());
 					copySpec.into(temporaryDir);
 					copySpec.setIncludeEmptyDirs(false);
@@ -413,7 +413,7 @@ public class PatchTask extends DefaultTask {
 								leadingPathReplacementsMap));
 					}
 
-					copySpec.filter(_fixCrLfArgs, FixCrLfFilter.class);
+					copySpec.filter(_fixSrcCrLfArgs, FixCrLfFilter.class);
 					copySpec.from(project.zipTree(getOriginalLibSrcFile()));
 					copySpec.include(getFileNames());
 					copySpec.into(temporaryDir);
@@ -553,13 +553,20 @@ public class PatchTask extends DefaultTask {
 	private static final String _BASE_URL =
 		"http://repo.maven.apache.org/maven2/";
 
-	private static final Map<String, Object> _fixCrLfArgs = new HashMap<>();
+	private static final Map<String, Object> _fixPatchCrLfArgs =
+		new HashMap<>();
+	private static final Map<String, Object> _fixSrcCrLfArgs = new HashMap<>();
 
 	static {
-		_fixCrLfArgs.put(
+		_fixPatchCrLfArgs.put(
 			"eof", FixCrLfFilter.AddAsisRemove.newInstance("remove"));
-		_fixCrLfArgs.put("eol", FixCrLfFilter.CrLf.newInstance("lf"));
-		_fixCrLfArgs.put("fixlast", false);
+		_fixPatchCrLfArgs.put("eol", FixCrLfFilter.CrLf.newInstance("lf"));
+		_fixPatchCrLfArgs.put("fixlast", false);
+
+		_fixPatchCrLfArgs.put(
+			"eof", FixCrLfFilter.AddAsisRemove.newInstance("asis"));
+		_fixSrcCrLfArgs.put("eol", FixCrLfFilter.CrLf.newInstance("lf"));
+		_fixSrcCrLfArgs.put("fixlast", false);
 	}
 
 	private final List<Object> _args = new ArrayList<>();
