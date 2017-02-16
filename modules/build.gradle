@@ -92,6 +92,14 @@ gradle.beforeProject {
 			}
 		}
 
+		if (System.getenv("JENKINS_HOME")) {
+			pluginManager.withPlugin("com.liferay.test.integration") {
+				startTestableTomcat {
+					deleteLiferayHome = false
+				}
+			}
+		}
+
 		pluginManager.withPlugin("com.liferay.ant.plugin") {
 			task buildLang(dependsOn: "build-lang")
 
@@ -120,6 +128,31 @@ gradle.beforeProject {
 				xmltask rootProject.files("../lib/development/xmltask.jar")
 			}
 
+			if (bndPrintJarFiles != null) {
+				jar {
+					doLast {
+						bndPrintJarFiles << archivePath
+					}
+				}
+			}
+
+			if (gradle.hasProperty("testClassGroupIndex")) {
+				test {
+					include gradle.testClasses
+
+					jvmArgs "-Dtest.class.group.index=" + gradle.testClassGroupIndex
+					jvmArgs "-Dtest.class.groups=" + gradle.testClassGroups
+				}
+			}
+
+			if (System.getenv("JENKINS_HOME")) {
+				buildCSS {
+					jvmArgs "-Xss4m"
+				}
+			}
+		}
+
+		pluginManager.withPlugin("com.liferay.test.integration.base") {
 			testIntegration {
 				doLast {
 					String databaseType = System.properties["database.type"]
@@ -144,32 +177,12 @@ gradle.beforeProject {
 						delete file
 					}
 				}
-			}
 
-			if (bndPrintJarFiles != null) {
-				jar {
-					doLast {
-						bndPrintJarFiles << archivePath
-					}
-				}
-			}
-
-			if (gradle.hasProperty("testClassGroupIndex")) {
-				configure([test, testIntegration]) {
+				if (gradle.hasProperty("testClassGroupIndex")) {
 					include gradle.testClasses
 
 					jvmArgs "-Dtest.class.group.index=" + gradle.testClassGroupIndex
 					jvmArgs "-Dtest.class.groups=" + gradle.testClassGroups
-				}
-			}
-
-			if (System.getenv("JENKINS_HOME")) {
-				buildCSS {
-					jvmArgs "-Xss4m"
-				}
-
-				startTestableTomcat {
-					deleteLiferayHome = false
 				}
 			}
 		}
