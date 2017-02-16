@@ -25,6 +25,8 @@ import com.liferay.gradle.plugins.cache.CacheExtension;
 import com.liferay.gradle.plugins.cache.CachePlugin;
 import com.liferay.gradle.plugins.cache.task.TaskCache;
 import com.liferay.gradle.plugins.defaults.internal.FindSecurityBugsPlugin;
+import com.liferay.gradle.plugins.defaults.internal.LiferayOSGiTestIntegrationBaseDefaultsPlugin;
+import com.liferay.gradle.plugins.defaults.internal.LiferayOSGiTestIntegrationDefaultsPlugin;
 import com.liferay.gradle.plugins.defaults.internal.LiferayRelengPlugin;
 import com.liferay.gradle.plugins.defaults.internal.WhipDefaultsPlugin;
 import com.liferay.gradle.plugins.defaults.internal.util.BackupFilesBuildAdapter;
@@ -47,7 +49,6 @@ import com.liferay.gradle.plugins.patcher.PatchTask;
 import com.liferay.gradle.plugins.service.builder.BuildServiceTask;
 import com.liferay.gradle.plugins.service.builder.ServiceBuilderPlugin;
 import com.liferay.gradle.plugins.source.formatter.SourceFormatterPlugin;
-import com.liferay.gradle.plugins.test.integration.TestIntegrationBasePlugin;
 import com.liferay.gradle.plugins.tlddoc.builder.TLDDocBuilderPlugin;
 import com.liferay.gradle.plugins.tlddoc.builder.tasks.TLDDocTask;
 import com.liferay.gradle.plugins.upgrade.table.builder.UpgradeTableBuilderPlugin;
@@ -193,9 +194,7 @@ import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.CompileOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.javadoc.Javadoc;
-import org.gradle.api.tasks.testing.JUnitXmlReport;
 import org.gradle.api.tasks.testing.Test;
-import org.gradle.api.tasks.testing.TestTaskReports;
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat;
 import org.gradle.api.tasks.testing.logging.TestLogEvent;
 import org.gradle.api.tasks.testing.logging.TestLoggingContainer;
@@ -329,6 +328,9 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 		_applyConfigScripts(project);
 
+		Configuration aspectJWeaverConfiguration =
+			_addConfigurationAspectJWeaver(project);
+
 		_addDependenciesPmd(project);
 
 		if (testProject || _hasTests(project)) {
@@ -336,8 +338,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 			WhipDefaultsPlugin.INSTANCE.apply(project);
 
-			Configuration aspectJWeaverConfiguration =
-				_addConfigurationAspectJWeaver(project);
 			Configuration portalConfiguration = GradleUtil.getConfiguration(
 				project, LiferayBasePlugin.PORTAL_CONFIGURATION_NAME);
 			Configuration portalTestConfiguration = _addConfigurationPortalTest(
@@ -349,13 +349,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			_configureIdea(project, portalTestConfiguration);
 			_configureSourceSetTest(
 				project, portalConfiguration, portalTestConfiguration);
-			_configureSourceSetTestIntegration(
-				project, portalConfiguration, portalTestConfiguration);
-			_configureTaskTestAspectJWeaver(
-				project, JavaPlugin.TEST_TASK_NAME, aspectJWeaverConfiguration);
-			_configureTaskTestAspectJWeaver(
-				project, TestIntegrationBasePlugin.TEST_INTEGRATION_TASK_NAME,
-				aspectJWeaverConfiguration);
 		}
 
 		Task baselineTask = GradleUtil.getTask(
@@ -417,14 +410,13 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		_configureTaskDeploy(project, deployDependenciesTask);
 		_configureTaskJar(project, testProject);
 		_configureTaskJavadoc(project, portalRootDir);
-		_configureTaskTest(project);
-		_configureTaskTestIntegration(project);
 		_configureTaskTlddoc(project, portalRootDir);
 		_configureTasksBaseline(project);
 		_configureTasksFindBugs(project);
 		_configureTasksJavaCompile(project);
 		_configureTasksPmd(project);
 		_configureTasksPublishNodeModule(project);
+		_configureTasksTest(project, aspectJWeaverConfiguration);
 
 		_addTaskUpdateFileSnapshotVersions(project);
 
@@ -518,6 +510,9 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 				}
 
 			});
+
+		LiferayOSGiTestIntegrationBaseDefaultsPlugin.INSTANCE.apply(project);
+		LiferayOSGiTestIntegrationDefaultsPlugin.INSTANCE.apply(project);
 	}
 
 	protected static void configureRepositories(Project project) {
@@ -1094,12 +1089,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			if (testProject) {
 				sourceSet = GradleUtil.getSourceSet(
 					project, SourceSet.TEST_SOURCE_SET_NAME);
-
-				jar.from(sourceSet.getAllSource());
-
-				sourceSet = GradleUtil.getSourceSet(
-					project,
-					TestIntegrationBasePlugin.TEST_INTEGRATION_SOURCE_SET_NAME);
 
 				jar.from(sourceSet.getAllSource());
 			}
@@ -2363,28 +2352,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 				sourceSet.getRuntimeClasspath(), portalTestConfiguration));
 	}
 
-	private void _configureSourceSetTestIntegration(
-		Project project, Configuration portalConfiguration,
-		Configuration portalTestConfiguration) {
-
-		SourceSet sourceSet = GradleUtil.getSourceSet(
-			project,
-			TestIntegrationBasePlugin.TEST_INTEGRATION_SOURCE_SET_NAME);
-
-		_configureSourceSetClassesDir(
-			project, sourceSet, "test-classes/integration");
-
-		sourceSet.setCompileClasspath(
-			FileUtil.join(
-				portalConfiguration, sourceSet.getCompileClasspath(),
-				portalTestConfiguration));
-
-		sourceSet.setRuntimeClasspath(
-			FileUtil.join(
-				portalConfiguration, sourceSet.getRuntimeClasspath(),
-				portalTestConfiguration));
-	}
-
 	private void _configureTaskBaseline(BaselineTask baselineTask) {
 		Project project = baselineTask.getProject();
 
@@ -2744,12 +2711,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 		if (testProject) {
 			jar.dependsOn(JavaPlugin.TEST_CLASSES_TASK_NAME);
-
-			SourceSet sourceSet = GradleUtil.getSourceSet(
-				project,
-				TestIntegrationBasePlugin.TEST_INTEGRATION_SOURCE_SET_NAME);
-
-			jar.dependsOn(sourceSet.getClassesTaskName());
 		}
 
 		jar.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
@@ -3103,20 +3064,49 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			});
 	}
 
-	private void _configureTaskTest(Project project) {
-		Test test = (Test)GradleUtil.getTask(
-			project, JavaPlugin.TEST_TASK_NAME);
+	private void _configureTasksTest(
+		Project project, final Configuration aspectJWeaverConfiguration) {
 
-		_configureTaskTestIgnoreFailures(test);
-		_configureTaskTestJvmArgs(test, "junit.java.unit.gc");
-		_configureTaskTestLogging(test);
+		TaskContainer taskContainer = project.getTasks();
+
+		taskContainer.withType(
+			Test.class,
+			new Action<Test>() {
+
+				@Override
+				public void execute(Test test) {
+					_configureTaskTest(test, aspectJWeaverConfiguration);
+				}
+
+			});
 	}
 
-	private void _configureTaskTestAspectJWeaver(
-		Project project, String taskName,
-		final Configuration aspectJWeaverConfiguration) {
+	private void _configureTaskTest(
+		Test test, final Configuration aspectJWeaverConfiguration) {
 
-		Test test = (Test)GradleUtil.getTask(project, taskName);
+		test.setIgnoreFailures(true);
+
+		// JVM args
+
+		String jvmArgsName = test.getName();
+
+		if ((jvmArgsName.length() > 4) && jvmArgsName.startsWith("test")) {
+			jvmArgsName = jvmArgsName.substring(4);
+			jvmArgsName = jvmArgsName.toLowerCase();
+		}
+		else {
+			jvmArgsName = "unit";
+		}
+
+		String jvmArgs = GradleUtil.getProperty(
+			test.getProject(), "junit.java." + jvmArgsName + ".gc",
+			(String)null);
+
+		if (Validator.isNotNull(jvmArgs)) {
+			test.jvmArgs((Object[])jvmArgs.split("\\s+"));
+		}
+
+		// AspectJ weaver
 
 		test.doFirst(
 			new Action<Task>() {
@@ -3136,43 +3126,9 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		test.systemProperty(
 			"org.aspectj.weaver.loadtime.configuration",
 			"com/liferay/aspectj/modules/aop.xml");
-	}
 
-	private void _configureTaskTestIgnoreFailures(Test test) {
-		test.setIgnoreFailures(true);
-	}
+		// Test logging
 
-	private void _configureTaskTestIntegration(Project project) {
-		Test test = (Test)GradleUtil.getTask(
-			project, TestIntegrationBasePlugin.TEST_INTEGRATION_TASK_NAME);
-
-		_configureTaskTestIgnoreFailures(test);
-		_configureTaskTestJvmArgs(test, "junit.java.integration.gc");
-		_configureTaskTestLogging(test);
-
-		test.systemProperty("org.apache.maven.offline", Boolean.TRUE);
-
-		File resultsDir = project.file("test-results/integration");
-
-		test.setBinResultsDir(new File(resultsDir, "binary/testIntegration"));
-
-		TestTaskReports testTaskReports = test.getReports();
-
-		JUnitXmlReport jUnitXmlReport = testTaskReports.getJunitXml();
-
-		jUnitXmlReport.setDestination(resultsDir);
-	}
-
-	private void _configureTaskTestJvmArgs(Test test, String propertyName) {
-		String jvmArgs = GradleUtil.getProperty(
-			test.getProject(), propertyName, (String)null);
-
-		if (Validator.isNotNull(jvmArgs)) {
-			test.jvmArgs((Object[])jvmArgs.split("\\s+"));
-		}
-	}
-
-	private void _configureTaskTestLogging(Test test) {
 		TestLoggingContainer testLoggingContainer = test.getTestLogging();
 
 		testLoggingContainer.setEvents(EnumSet.allOf(TestLogEvent.class));
@@ -3738,16 +3694,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			project, SourceSet.TEST_SOURCE_SET_NAME);
 
 		SourceDirectorySet sourceDirectorySet = sourceSet.getAllSource();
-
-		if (!sourceDirectorySet.isEmpty()) {
-			return true;
-		}
-
-		sourceSet = GradleUtil.getSourceSet(
-			project,
-			TestIntegrationBasePlugin.TEST_INTEGRATION_SOURCE_SET_NAME);
-
-		sourceDirectorySet = sourceSet.getAllSource();
 
 		if (!sourceDirectorySet.isEmpty()) {
 			return true;
