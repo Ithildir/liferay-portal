@@ -1,5 +1,7 @@
 import com.liferay.gradle.util.copy.RenameDependencyClosure
 
+apply plugin: "com.liferay.test.integration.base"
+
 task copyTestLibs(type: Copy)
 
 configurations {

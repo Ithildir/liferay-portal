@@ -1,3 +1,5 @@
+apply plugin: "com.liferay.test.integration"
+
 copyLibs {
 	enabled = true
 }

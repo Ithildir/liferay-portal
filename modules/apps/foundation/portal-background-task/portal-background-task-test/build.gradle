@@ -1,3 +1,5 @@
+apply plugin: "com.liferay.test.integration"
+
 dependencies {
 	testCompile group: "com.liferay", name: "com.liferay.portal.background.task.api", version: "2.1.0"
 	testCompile group: "com.liferay", name: "com.liferay.portal.background.task.service", version: "2.0.0"

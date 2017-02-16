@@ -1,3 +1,5 @@
+apply plugin: "com.liferay.test.integration"
+
 dependencies {
 	testCompile project(":apps:marketplace:marketplace-api")
 	testCompile project(":apps:marketplace:marketplace-service")

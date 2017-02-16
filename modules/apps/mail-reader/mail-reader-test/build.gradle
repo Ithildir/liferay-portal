@@ -1,3 +1,5 @@
+apply plugin: "com.liferay.test.integration"
+
 dependencies {
 	testCompile project(":apps:mail-reader:mail-reader-api")
 	testCompile project(":apps:mail-reader:mail-reader-service")

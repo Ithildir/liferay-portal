@@ -1,3 +1,5 @@
+apply plugin: "com.liferay.test.integration"
+
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 
