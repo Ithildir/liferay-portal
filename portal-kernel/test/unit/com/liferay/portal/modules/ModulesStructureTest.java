@@ -108,9 +108,6 @@ public class ModulesStructureTest {
 						_testAppBuildScripts(dirPath);
 					}
 					else if (Files.exists(dirPath.resolve("bnd.bnd"))) {
-						Assert.assertTrue(
-							"Missing " + buildGradlePath,
-							Files.exists(buildGradlePath));
 						Assert.assertFalse(
 							"Forbidden " + buildXMLPath,
 							Files.exists(buildXMLPath));
@@ -120,6 +117,8 @@ public class ModulesStructureTest {
 						Assert.assertFalse(
 							"Forbidden " + ivyXmlPath,
 							Files.exists(ivyXmlPath));
+
+						_testModuleBuildScripts(buildGradlePath);
 
 						return FileVisitResult.SKIP_SUBTREE;
 					}
@@ -415,6 +414,20 @@ public class ModulesStructureTest {
 		return sb.toString();
 	}
 
+	private int _getAppliedGradlePluginsCount(
+		String buildGradle, String... pluginIds) {
+
+		int count = 0;
+
+		for (String pluginId : pluginIds) {
+			if (_isGradlePluginApplied(buildGradle, pluginId)) {
+				count++;
+			}
+		}
+
+		return count;
+	}
+
 	private String _getGitRepoBuildGradle(
 			Path dirPath, String buildGradleTemplate)
 		throws IOException {
@@ -489,6 +502,18 @@ public class ModulesStructureTest {
 					projectPathPrefix, File.separatorChar, CharPool.COLON);
 
 		return projectPathPrefix;
+	}
+
+	private boolean _isGradlePluginApplied(
+		String buildGradle, String pluginId) {
+
+		if (buildGradle.contains(
+				"apply plugin: \"" + pluginId + StringPool.QUOTE)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean _isInGitRepo(Path dirPath) {
@@ -713,6 +738,69 @@ public class ModulesStructureTest {
 			matcher.matches());
 	}
 
+	private void _testModuleBuildScripts(Path buildGradlePath)
+		throws IOException {
+
+		Path dirPath = buildGradlePath.getParent();
+
+		Path srcTestIntegrationDirPath = dirPath.resolve("src/testIntegration");
+
+		Path skipManagerAppServerPath = srcTestIntegrationDirPath.resolve(
+			"skip.managed.app.server");
+
+		Assert.assertFalse(
+			"Forbidden " + skipManagerAppServerPath,
+			Files.exists(skipManagerAppServerPath));
+
+		boolean hasIntegrationTests = Files.isDirectory(
+			srcTestIntegrationDirPath);
+
+		String buildGradle = _read(buildGradlePath);
+
+		boolean testIntegrationBasePluginApplied = _isGradlePluginApplied(
+			buildGradle, _TEST_INTEGRATION_BASE_PLUGIN_ID);
+		int testIntegrationPluginsCount = _getAppliedGradlePluginsCount(
+			buildGradle, _TEST_INTEGRATION_PLUGIN_IDS);
+
+		int testIntegrationPluginsTotalCount = testIntegrationPluginsCount;
+
+		if (testIntegrationBasePluginApplied) {
+			testIntegrationPluginsTotalCount++;
+		}
+
+		String dirName = String.valueOf(dirPath.getFileName());
+
+		if (dirName.endsWith("-test")) {
+			Assert.assertTrue(
+				"Missing " + srcTestIntegrationDirPath, hasIntegrationTests);
+
+			Assert.assertEquals(
+				"Exactly 1 test integration plugin must be applied in " +
+					buildGradlePath,
+				1, testIntegrationPluginsTotalCount);
+		}
+		else {
+			if (hasIntegrationTests) {
+				Assert.assertTrue(
+					"Test integration plugin \"" +
+						_TEST_INTEGRATION_BASE_PLUGIN_ID +
+							"\" must be applied in " + buildGradlePath,
+					testIntegrationBasePluginApplied);
+
+				Assert.assertEquals(
+					"No other test integration plugins can be applied in " +
+						buildGradlePath,
+					0, testIntegrationPluginsCount);
+			}
+			else {
+				Assert.assertEquals(
+					"No test integration plugins can be applied in " +
+						buildGradlePath,
+					0, testIntegrationPluginsTotalCount);
+			}
+		}
+	}
+
 	private void _testThemeBuildScripts(Path dirPath) throws IOException {
 		if (!_contains(
 				dirPath.resolve("package.json"), "\"liferay-theme-tasks\":")) {
@@ -764,6 +852,13 @@ public class ModulesStructureTest {
 
 	private static final String _SOURCE_FORMATTER_IGNORE_FILE_NAME =
 		"source_formatter.ignore";
+
+	private static final String _TEST_INTEGRATION_BASE_PLUGIN_ID =
+		"com.liferay.test.integration.base";
+
+	private static final String[] _TEST_INTEGRATION_PLUGIN_IDS = {
+		"com.liferay.test.integration"
+	};
 
 	private static final Pattern _gitRepoGradleProjectGroupPattern =
 		Pattern.compile("com\\.liferay(?:\\.[a-z]+)+");
