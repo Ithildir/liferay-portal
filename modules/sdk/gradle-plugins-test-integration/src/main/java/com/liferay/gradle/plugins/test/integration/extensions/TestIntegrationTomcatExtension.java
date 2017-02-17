@@ -15,6 +15,8 @@
 package com.liferay.gradle.plugins.test.integration.extensions;
 
 import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.test.integration.tasks.JmxRemotePortSpec;
+import com.liferay.gradle.plugins.test.integration.tasks.ManagerSpec;
 
 import java.io.File;
 
@@ -23,7 +25,8 @@ import org.gradle.api.Project;
 /**
  * @author Andrea Di Giorgi
  */
-public class TestIntegrationTomcatExtension {
+public class TestIntegrationTomcatExtension
+	implements JmxRemotePortSpec, ManagerSpec {
 
 	public TestIntegrationTomcatExtension(Project project) {
 		_project = project;
@@ -37,6 +40,7 @@ public class TestIntegrationTomcatExtension {
 		return GradleUtil.toFile(_project, _dir);
 	}
 
+	@Override
 	public int getJmxRemotePort() {
 		return GradleUtil.toInteger(_jmxRemotePort);
 	}
@@ -45,10 +49,12 @@ public class TestIntegrationTomcatExtension {
 		return GradleUtil.toFile(_project, _liferayHome);
 	}
 
+	@Override
 	public String getManagerPassword() {
 		return GradleUtil.toString(_managerPassword);
 	}
 
+	@Override
 	public String getManagerUserName() {
 		return GradleUtil.toString(_managerUserName);
 	}
@@ -65,6 +71,7 @@ public class TestIntegrationTomcatExtension {
 		_dir = dir;
 	}
 
+	@Override
 	public void setJmxRemotePort(Object jmxRemotePort) {
 		_jmxRemotePort = jmxRemotePort;
 	}
@@ -73,10 +80,12 @@ public class TestIntegrationTomcatExtension {
 		_liferayHome = liferayHome;
 	}
 
+	@Override
 	public void setManagerPassword(Object managerPassword) {
 		_managerPassword = managerPassword;
 	}
 
+	@Override
 	public void setManagerUserName(Object managerUserName) {
 		_managerUserName = managerUserName;
 	}
