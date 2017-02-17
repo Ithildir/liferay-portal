@@ -581,31 +581,9 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 	private void _configureTaskTestIntegration(
 		final Test test, final SourceSet testIntegrationSourceSet,
 		final TestIntegrationTomcatExtension testIntegrationTomcatExtension,
-		final StartTestableTomcatTask startTestableTomcatTask) {
+		StartTestableTomcatTask startTestableTomcatTask) {
 
-		Closure<Task> closure = new Closure<Task>(test.getProject()) {
-
-			@SuppressWarnings("unused")
-			public Task doCall(Test test) {
-				SourceDirectorySet sourceDirectorySet =
-					testIntegrationSourceSet.getResources();
-
-				for (File dir : sourceDirectorySet.getSrcDirs()) {
-					File file = new File(
-						dir, _SKIP_MANAGED_APP_SERVER_FILE_NAME);
-
-					if (file.exists()) {
-						return null;
-					}
-				}
-
-				return startTestableTomcatTask;
-			}
-
-		};
-
-		test.dependsOn(closure);
-
+		test.dependsOn(startTestableTomcatTask);
 		test.jvmArgs(
 			"-Djava.net.preferIPv4Stack=true", "-Dliferay.mode=test",
 			"-Duser.timezone=GMT");
@@ -676,9 +654,6 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 
 		return fileName;
 	}
-
-	private static final String _SKIP_MANAGED_APP_SERVER_FILE_NAME =
-		"skip.managed.app.server";
 
 	private static final Set<File> _startedAppServerBinDirs = new HashSet<>();
 	private static final ReentrantLock _startedAppServersReentrantLock =
