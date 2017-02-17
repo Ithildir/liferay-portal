@@ -43,6 +43,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.gradle.StartParameter;
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -81,6 +82,12 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 	@Override
 	public void apply(final Project project) {
 		GradleUtil.applyPlugin(project, TestIntegrationBasePlugin.class);
+
+		if (GradleUtil.hasPlugin(project, TestIntegrationDockerPlugin.class)) {
+			throw new GradleException(
+				"Unable to apply both \"com.liferay.test.integration\" and \"" +
+					"com.liferay.test.integration.docker\"");
+		}
 
 		final SourceSet testIntegrationSourceSet = GradleUtil.getSourceSet(
 			project,
