@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.gradle.plugins.test.integration;
+package com.liferay.gradle.plugins.test.integration.extensions;
 
 import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
 
