@@ -14,6 +14,7 @@
 
 package com.liferay.gradle.plugins.test.integration;
 
+import com.liferay.gradle.plugins.test.integration.extensions.TestIntegrationTomcatExtension;
 import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.test.integration.internal.util.StringUtil;
 import com.liferay.gradle.plugins.test.integration.tasks.BaseAppServerTask;
