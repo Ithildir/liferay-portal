@@ -186,9 +186,11 @@ public abstract class BaseAppServerTask extends DefaultTask {
 	}
 
 	private Object _binDir;
-	private long _checkInterval = 500;
+	private long _checkInterval =
+		TestIntegrationPluginConstants.DEFAULT_CHECK_INTERVAL;
 	private Object _checkPath;
-	private long _checkTimeout = 5 * 60 * 1000;
+	private long _checkTimeout =
+		TestIntegrationPluginConstants.DEFAULT_CHECK_TIMEOUT;
 	private Object _executable;
 	private final List<Object> _executableArgs = new ArrayList<>();
 	private Object _portNumber;
