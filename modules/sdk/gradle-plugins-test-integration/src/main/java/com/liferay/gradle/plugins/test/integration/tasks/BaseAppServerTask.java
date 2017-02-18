@@ -15,12 +15,9 @@
 package com.liferay.gradle.plugins.test.integration.tasks;
 
 import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.test.integration.internal.util.TestIntegrationPluginConstants;
 
 import java.io.File;
-import java.io.IOException;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.DefaultTask;
-import org.gradle.api.GradleException;
 import org.gradle.api.tasks.Input;
 import org.gradle.util.GUtil;
 
@@ -92,25 +88,8 @@ public abstract class BaseAppServerTask extends DefaultTask {
 	}
 
 	public boolean isReachable() {
-		try {
-			URL url = new URL(
-				"http", "localhost", getPortNumber(), getCheckPath());
-
-			HttpURLConnection httpURLConnection =
-				(HttpURLConnection)url.openConnection();
-
-			httpURLConnection.setRequestMethod("GET");
-
-			int responseCode = httpURLConnection.getResponseCode();
-
-			if ((responseCode > 0) && (responseCode < 400)) {
-				return true;
-			}
-		}
-		catch (IOException ioe) {
-		}
-
-		return false;
+		return GradleUtil.isReachable(
+			"http", "localhost", getPortNumber(), getCheckPath());
 	}
 
 	public void setBinDir(Object binDir) {
@@ -168,21 +147,9 @@ public abstract class BaseAppServerTask extends DefaultTask {
 	}
 
 	protected void waitFor(Callable<Boolean> callable) {
-		boolean success = false;
-
-		try {
-			success = GradleUtil.waitFor(
-				callable, getCheckInterval(), getCheckTimeout());
-		}
-		catch (Exception e) {
-			throw new GradleException(
-				"Unable to wait for the application server", e);
-		}
-
-		if (!success) {
-			throw new GradleException(
-				"Timeout while waiting for the application server");
-		}
+		GradleUtil.waitFor(
+			callable, getCheckInterval(), getCheckTimeout(),
+			"application server");
 	}
 
 	private Object _binDir;
