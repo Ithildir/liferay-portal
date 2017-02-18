@@ -15,6 +15,7 @@
 package com.liferay.gradle.plugins.test.integration.extensions;
 
 import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.test.integration.internal.util.TestIntegrationPluginConstants;
 import com.liferay.gradle.plugins.test.integration.tasks.JmxRemotePortSpec;
 import com.liferay.gradle.plugins.test.integration.tasks.ManagerSpec;
 
@@ -94,13 +95,16 @@ public class TestIntegrationTomcatExtension
 		_portNumber = portNumber;
 	}
 
-	private Object _checkPath = "/web/guest";
+	private Object _checkPath =
+		TestIntegrationPluginConstants.DEFAULT_CHECK_PATH;
 	private Object _dir;
-	private Object _jmxRemotePort = 8099;
+	private Object _jmxRemotePort =
+		TestIntegrationPluginConstants.DEFAULT_PORT_JMX;
 	private Object _liferayHome;
 	private Object _managerPassword = "tomcat";
 	private Object _managerUserName = "tomcat";
-	private Object _portNumber = 8080;
+	private Object _portNumber =
+		TestIntegrationPluginConstants.DEFAULT_PORT_HTTP;
 	private final Project _project;
 
 }
