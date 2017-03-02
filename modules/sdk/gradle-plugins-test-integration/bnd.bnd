@@ -3,4 +3,5 @@ Bundle-SymbolicName: com.liferay.gradle.plugins.test.integration
 Bundle-Version: 1.1.1
 Export-Package:\
 	com.liferay.gradle.plugins.test.integration,\
+	com.liferay.gradle.plugins.test.integration.extensions,\
 	com.liferay.gradle.plugins.test.integration.tasks
