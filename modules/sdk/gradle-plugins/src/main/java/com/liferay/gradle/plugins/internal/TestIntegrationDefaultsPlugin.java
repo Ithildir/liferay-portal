@@ -19,7 +19,7 @@ import com.liferay.gradle.plugins.extensions.LiferayExtension;
 import com.liferay.gradle.plugins.extensions.TomcatAppServer;
 import com.liferay.gradle.plugins.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.test.integration.TestIntegrationPlugin;
-import com.liferay.gradle.plugins.test.integration.TestIntegrationTomcatExtension;
+import com.liferay.gradle.plugins.test.integration.extensions.TestIntegrationTomcatExtension;
 import com.liferay.gradle.plugins.test.integration.tasks.SetUpTestableTomcatTask;
 import com.liferay.gradle.plugins.test.integration.tasks.StartTestableTomcatTask;
 import com.liferay.gradle.plugins.test.integration.tasks.StopAppServerTask;
