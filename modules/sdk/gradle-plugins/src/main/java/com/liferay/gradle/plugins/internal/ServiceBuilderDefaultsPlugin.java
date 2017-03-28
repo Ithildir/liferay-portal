@@ -16,6 +16,7 @@ package com.liferay.gradle.plugins.internal;
 
 import com.liferay.gradle.plugins.BasePortalToolDefaultsPlugin;
 import com.liferay.gradle.plugins.LiferayBasePlugin;
+import com.liferay.gradle.plugins.LiferayOSGiPlugin;
 import com.liferay.gradle.plugins.db.support.DBSupportPlugin;
 import com.liferay.gradle.plugins.db.support.tasks.CleanServiceBuilderTask;
 import com.liferay.gradle.plugins.internal.util.GradleUtil;
@@ -26,8 +27,6 @@ import com.liferay.gradle.plugins.tasks.BuildDBTask;
 import java.io.File;
 
 import java.util.concurrent.Callable;
-
-import org.dm.gradle.plugins.bundle.BundlePlugin;
 
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -80,11 +79,11 @@ public class ServiceBuilderDefaultsPlugin
 			});
 
 		GradleUtil.withPlugin(
-			project, BundlePlugin.class,
-			new Action<BundlePlugin>() {
+			project, LiferayOSGiPlugin.class,
+			new Action<LiferayOSGiPlugin>() {
 
 				@Override
-				public void execute(BundlePlugin bundlePlugin) {
+				public void execute(LiferayOSGiPlugin liferayOSGiPlugin) {
 					_configureTasksBuildServiceForBundlePlugin(project);
 				}
 
