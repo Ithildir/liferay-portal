@@ -24,8 +24,10 @@ import java.util.Set;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.BasePluginConvention;
+import org.gradle.api.plugins.Convention;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.tasks.TaskContainer;
 
@@ -41,41 +43,18 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 		return basePluginConvention.getArchivesBaseName();
 	}
 
+	public static <T> T getConvention(Task task, Class<T> clazz) {
+		Convention convention = task.getConvention();
+
+		return convention.getPlugin(clazz);
+	}
+
 	public static File getSrcDir(SourceDirectorySet sourceDirectorySet) {
 		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
 
 		Iterator<File> iterator = srcDirs.iterator();
 
 		return iterator.next();
-	}
-
-	/**
-	 * Copied from <code>com.liferay.portal.kernel.util.ThreadUtil</code>.
-	 */
-	public static Thread[] getThreads() {
-		Thread currentThread = Thread.currentThread();
-
-		ThreadGroup threadGroup = currentThread.getThreadGroup();
-
-		while (threadGroup.getParent() != null) {
-			threadGroup = threadGroup.getParent();
-		}
-
-		int threadCountGuess = threadGroup.activeCount();
-
-		Thread[] threads = new Thread[threadCountGuess];
-
-		int threadCountActual = threadGroup.enumerate(threads);
-
-		while (threadCountActual == threadCountGuess) {
-			threadCountGuess *= 2;
-
-			threads = new Thread[threadCountGuess];
-
-			threadCountActual = threadGroup.enumerate(threads);
-		}
-
-		return threads;
 	}
 
 	public static boolean hasPlugin(
@@ -97,22 +76,6 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 
 		if (taskContainer.findByName(name) != null) {
 			return true;
-		}
-
-		return false;
-	}
-
-	public static boolean isRunningInsideDaemon() {
-		for (Thread thread : getThreads()) {
-			if (thread == null) {
-				continue;
-			}
-
-			String name = thread.getName();
-
-			if (name.startsWith("Daemon worker")) {
-				return true;
-			}
 		}
 
 		return false;

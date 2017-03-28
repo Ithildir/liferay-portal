@@ -29,14 +29,18 @@ import com.liferay.gradle.plugins.internal.util.GradleUtil;
 import com.liferay.gradle.util.StringUtil;
 import com.liferay.gradle.util.Validator;
 
+import java.io.File;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.CompileOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
@@ -103,6 +107,15 @@ public class LiferayOSGiExtension {
 
 		_bundleDefaultInstructions.put("-jsp", "*.jsp,*.jspf");
 		_bundleDefaultInstructions.put("-sass", "*");
+
+		File bndFile = project.file("bnd.bnd");
+
+		if (bndFile.exists()) {
+			_bundleInstructions = GUtil.loadProperties(bndFile);
+		}
+		else {
+			_bundleInstructions = new Properties();
+		}
 	}
 
 	public LiferayOSGiExtension bundleDefaultInstructions(
@@ -115,6 +128,14 @@ public class LiferayOSGiExtension {
 
 	public Map<String, String> getBundleDefaultInstructions() {
 		return GradleUtil.toStringMap(_bundleDefaultInstructions);
+	}
+
+	public String getBundleInstruction(String key) {
+		return _bundleInstructions.getProperty(key);
+	}
+
+	public Properties getBundleInstructions() {
+		return _bundleInstructions;
 	}
 
 	public boolean isAutoUpdateXml() {
@@ -168,6 +189,7 @@ public class LiferayOSGiExtension {
 	private boolean _autoUpdateXml = true;
 	private final Map<String, Object> _bundleDefaultInstructions =
 		new HashMap<>();
+	private final Properties _bundleInstructions;
 	private boolean _expandCompileInclude;
 	private final Project _project;
 
