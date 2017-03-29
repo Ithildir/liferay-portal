@@ -1,0 +1,42 @@
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+
+apply plugin: "com.liferay.plugin"
+
+task runGradleTest
+
+liferayOSGi {
+	bundleDefaultInstructions "Sample-One": "one", "Sample-Two": "two"
+
+	bundleDefaultInstructions "Sample-Three": {
+		"three-${buildFile.name}"
+	}
+}
+
+dependencies {
+	compileInclude group: "com.squareup.okhttp3", name: "okhttp", version: "3.8.1"
+}
+
+repositories {
+	maven {
+		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+	}
+}
+
+runGradleTest {
+	dependsOn jar
+
+	doLast {
+		JarFile jarFile = new JarFile(jar.archivePath)
+
+		jarFile.withCloseable {
+			assert jarFile.getEntry("lib/okhttp-3.8.1.jar")
+			assert jarFile.getEntry("lib/okio-1.13.0.jar")
+
+			assert jarFile.manifest.mainAttributes.getValue("Bundle-ClassPath") == ".,lib/okhttp-3.8.1.jar,lib/okio-1.13.0.jar"
+			assert jarFile.manifest.mainAttributes.getValue("Sample-One") == "one-bnd"
+			assert jarFile.manifest.mainAttributes.getValue("Sample-Two") == "two"
+			assert jarFile.manifest.mainAttributes.getValue("Sample-Three") == "three-build.gradle"
+		}
+	}
+}

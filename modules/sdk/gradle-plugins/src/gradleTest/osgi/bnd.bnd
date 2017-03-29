@@ -1,0 +1,4 @@
+Bundle-Name: Sample
+Bundle-SymbolicName: com.example.sample
+Bundle-Version: 1.0.0
+Sample-One: one-bnd
