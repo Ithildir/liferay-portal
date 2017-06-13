@@ -317,6 +317,37 @@ public class ModulesStructureTest {
 			});
 	}
 
+	@Test
+	public void testScanNodeModules() throws IOException {
+		Files.walkFileTree(
+			_modulesDirPath,
+			new SimpleFileVisitor<Path>() {
+
+				@Override
+				public FileVisitResult preVisitDirectory(
+					Path dirPath, BasicFileAttributes basicFileAttributes) {
+
+					String dirName = String.valueOf(dirPath.getFileName());
+
+					if (dirName.equals("bin") || dirName.equals("build") ||
+						dirName.equals("classes") || dirName.equals("src") ||
+						dirName.equals("test-classes")) {
+
+						return FileVisitResult.SKIP_SUBTREE;
+					}
+
+					if (Files.exists(dirPath.resolve("package.json"))) {
+						_testNodeModule(dirPath);
+
+						return FileVisitResult.SKIP_SUBTREE;
+					}
+
+					return FileVisitResult.CONTINUE;
+				}
+
+			});
+	}
+
 	private void _addGradlePluginNames(
 			Set<String> pluginNames, String pluginNamePrefix,
 			Path buildGradlePath, String pluginIdPrefix,
@@ -960,6 +991,14 @@ public class ModulesStructureTest {
 				"Redundant dependency detected in " + path,
 				activeGradleDependency, gradleDependency);
 		}
+	}
+
+	private void _testNodeModule(Path dirPath) {
+		Path npmShrinkwrapJsonPath = dirPath.resolve("npm-shrinkwrap.json");
+
+		Assert.assertTrue(
+			"Missing " + npmShrinkwrapJsonPath,
+			Files.exists(npmShrinkwrapJsonPath));
 	}
 
 	private void _testThemeBuildScripts(Path dirPath) throws IOException {
