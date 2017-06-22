@@ -14,6 +14,7 @@
 
 package com.liferay.portal.modules;
 
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.version.Version;
 
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
@@ -48,6 +49,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.json.JSONObject;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -318,7 +321,8 @@ public class ModulesStructureTest {
 
 				@Override
 				public FileVisitResult preVisitDirectory(
-					Path dirPath, BasicFileAttributes basicFileAttributes) {
+						Path dirPath, BasicFileAttributes basicFileAttributes)
+					throws IOException {
 
 					String dirName = String.valueOf(dirPath.getFileName());
 
@@ -329,8 +333,18 @@ public class ModulesStructureTest {
 						return FileVisitResult.SKIP_SUBTREE;
 					}
 
-					if (Files.exists(dirPath.resolve("package.json"))) {
-						_testNodeModule(dirPath);
+					Path packageJsonPath = dirPath.resolve("package.json");
+
+					if (Files.exists(packageJsonPath)) {
+						try {
+							_testNodeModule(dirPath, packageJsonPath);
+						}
+						catch (IOException ioe) {
+							throw ioe;
+						}
+						catch (Exception e) {
+							throw new IOException(e);
+						}
 
 						return FileVisitResult.SKIP_SUBTREE;
 					}
@@ -981,12 +995,63 @@ public class ModulesStructureTest {
 		}
 	}
 
-	private void _testNodeModule(Path dirPath) {
+	private void _testNodeModule(Path dirPath, Path packageJsonPath)
+		throws Exception {
+
+		String expectedName = String.valueOf(dirPath.getFileName());
+		String expectedVersion = null;
+
+		Path bndBndPath = dirPath.resolve("bnd.bnd");
+
+		if (Files.exists(bndBndPath)) {
+			Properties bndProperties = ModulesStructureTestUtil.readProperties(
+				bndBndPath);
+
+			expectedVersion = bndProperties.getProperty(
+				Constants.BUNDLE_VERSION);
+		}
+
+		JSONObject packageJSONObject = new JSONObject(
+			ModulesStructureTestUtil.read(packageJsonPath));
+
+		JSONObject liferayThemeJSONObject = packageJSONObject.optJSONObject(
+			"liferayTheme");
+
+		if (liferayThemeJSONObject != null) {
+			expectedName =
+				"liferay-" + liferayThemeJSONObject.getString("distName");
+		}
+
+		Assert.assertEquals(
+			"Incorrect \"name\" in " + packageJsonPath, expectedName,
+			packageJSONObject.getString("name"));
+
+		String version = packageJSONObject.getString("version");
+
+		if (Validator.isNotNull(expectedVersion)) {
+			Assert.assertEquals(
+				"Incorrect \"version\" in " + packageJsonPath, expectedVersion,
+				version);
+		}
+		else {
+			expectedVersion = version;
+		}
+
 		Path npmShrinkwrapJsonPath = dirPath.resolve("npm-shrinkwrap.json");
 
 		Assert.assertTrue(
 			"Missing " + npmShrinkwrapJsonPath,
 			Files.exists(npmShrinkwrapJsonPath));
+
+		JSONObject npmShrinkwrapJSONObject = new JSONObject(
+			ModulesStructureTestUtil.read(npmShrinkwrapJsonPath));
+
+		Assert.assertEquals(
+			"Incorrect \"name\" in " + npmShrinkwrapJsonPath, expectedName,
+			npmShrinkwrapJSONObject.getString("name"));
+		Assert.assertEquals(
+			"Incorrect \"version\" in " + npmShrinkwrapJsonPath,
+			expectedVersion, npmShrinkwrapJSONObject.getString("version"));
 	}
 
 	private void _testThemeBuildScripts(Path dirPath) throws IOException {
