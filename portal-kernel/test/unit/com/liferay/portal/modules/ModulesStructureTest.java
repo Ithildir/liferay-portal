@@ -28,7 +28,6 @@ import com.liferay.portal.modules.util.ModulesStructureTestUtil;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -62,14 +61,8 @@ public class ModulesStructureTest {
 
 	@BeforeClass
 	public static void setUpClass() throws IOException {
-		_buildProperties = new Properties();
-
-		try (InputStream inputStream = Files.newInputStream(
-				Paths.get("build.properties"))) {
-
-			_buildProperties.load(inputStream);
-		}
-
+		_buildProperties = ModulesStructureTestUtil.readProperties(
+			Paths.get("build.properties"));
 		_modulesDirPath = Paths.get("modules");
 	}
 
@@ -423,13 +416,8 @@ public class ModulesStructureTest {
 			return null;
 		}
 
-		Properties properties = new Properties();
-
-		try (InputStream inputStream = Files.newInputStream(
-				liferayPluginPackagePropertiesPath)) {
-
-			properties.load(inputStream);
-		}
+		Properties properties = ModulesStructureTestUtil.readProperties(
+			liferayPluginPackagePropertiesPath);
 
 		Set<String> jars = new TreeSet<>();
 

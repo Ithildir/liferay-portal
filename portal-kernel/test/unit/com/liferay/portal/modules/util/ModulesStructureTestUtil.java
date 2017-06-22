@@ -86,6 +86,16 @@ public class ModulesStructureTestUtil {
 			s, System.lineSeparator(), StringPool.NEW_LINE);
 	}
 
+	public static Properties readProperties(Path path) throws IOException {
+		Properties properties = new Properties();
+
+		try (InputStream inputStream = Files.newInputStream(path)) {
+			properties.load(inputStream);
+		}
+
+		return properties;
+	}
+
 	private static void _addGradleModuleDependencies(
 		List<GradleDependency> gradleDependencies, String gradleContent,
 		Path gradlePath) {
