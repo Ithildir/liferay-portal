@@ -888,11 +888,11 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 		}
 	}
 
-	private Map<String, String> _getBundleCompleteInstructions(
+	private Map<String, Object> _getBundleCompleteInstructions(
 		LiferayOSGiExtension liferayOSGiExtension,
 		Configuration compileIncludeConfiguration) {
 
-		Map<String, String> bundleCompleteInstructions = new HashMap<>();
+		Map<String, Object> bundleCompleteInstructions = new HashMap<>();
 
 		Map<String, Object> bundleDefaultInstructions =
 			liferayOSGiExtension.getBundleDefaultInstructions();

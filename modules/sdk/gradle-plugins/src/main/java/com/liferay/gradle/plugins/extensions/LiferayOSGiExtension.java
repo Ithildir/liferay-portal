@@ -126,8 +126,8 @@ public class LiferayOSGiExtension {
 		return this;
 	}
 
-	public Map<String, String> getBundleDefaultInstructions() {
-		return GradleUtil.toStringMap(_bundleDefaultInstructions);
+	public Map<String, Object> getBundleDefaultInstructions() {
+		return _bundleDefaultInstructions;
 	}
 
 	public String getBundleInstruction(String key) {

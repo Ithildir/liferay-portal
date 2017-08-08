@@ -16,9 +16,7 @@ package com.liferay.gradle.plugins.internal.util;
 
 import java.io.File;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.gradle.api.Action;
@@ -79,19 +77,6 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 		}
 
 		return false;
-	}
-
-	public static Map<String, String> toStringMap(Map<String, ?> map) {
-		Map<String, String> stringMap = new HashMap<>();
-
-		for (Map.Entry<String, ?> entry : map.entrySet()) {
-			String key = entry.getKey();
-			String value = toString(entry.getValue());
-
-			stringMap.put(key, value);
-		}
-
-		return stringMap;
 	}
 
 	public static <P extends Plugin<? extends Project>> void withPlugin(
