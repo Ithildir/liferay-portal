@@ -116,8 +116,6 @@ import javax.xml.parsers.DocumentBuilder;
 import nebula.plugin.extraconfigurations.OptionalBasePlugin;
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin;
 
-import org.dm.gradle.plugins.bundle.BundleExtension;
-
 import org.gradle.StartParameter;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -1351,10 +1349,10 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			Constants.BUNDLE_VERSION);
 
 		if (Validator.isNotNull(bundleVersion)) {
-			Map<String, String> bundleInstructions = _getBundleInstructions(
-				project);
+			Properties bundleInstructions = _getBundleInstructions(project);
 
-			bundleInstructions.put(Constants.BUNDLE_VERSION, bundleVersion);
+			bundleInstructions.setProperty(
+				Constants.BUNDLE_VERSION, bundleVersion);
 
 			project.setVersion(bundleVersion);
 
@@ -1702,15 +1700,14 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	private void _configureBundleInstructions(
 		Project project, GitRepo gitRepo) {
 
-		Map<String, String> bundleInstructions = _getBundleInstructions(
-			project);
+		Properties bundleInstructions = _getBundleInstructions(project);
 
 		String projectPath = project.getPath();
 
 		if (projectPath.startsWith(":apps:") ||
 			projectPath.startsWith(":private:") || (gitRepo != null)) {
 
-			String exportPackage = bundleInstructions.get(
+			String exportPackage = bundleInstructions.getProperty(
 				Constants.EXPORT_PACKAGE);
 
 			if (Validator.isNotNull(exportPackage)) {
@@ -3340,18 +3337,16 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private String _getBundleInstruction(Project project, String key) {
-		Map<String, String> bundleInstructions = _getBundleInstructions(
-			project);
+		Properties bundleInstructions = _getBundleInstructions(project);
 
-		return bundleInstructions.get(key);
+		return bundleInstructions.getProperty(key);
 	}
 
-	@SuppressWarnings("unchecked")
-	private Map<String, String> _getBundleInstructions(Project project) {
-		BundleExtension bundleExtension = GradleUtil.getExtension(
-			project, BundleExtension.class);
+	private Properties _getBundleInstructions(Project project) {
+		LiferayOSGiExtension liferayOSGiExtension = GradleUtil.getExtension(
+			project, LiferayOSGiExtension.class);
 
-		return (Map<String, String>)bundleExtension.getInstructions();
+		return liferayOSGiExtension.getBundleInstructions();
 	}
 
 	private GitRepo _getGitRepo(File dir) {
