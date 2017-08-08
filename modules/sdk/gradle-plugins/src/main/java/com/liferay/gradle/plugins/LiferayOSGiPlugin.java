@@ -74,7 +74,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -153,8 +152,7 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 		_configureLiferay(project, liferayExtension);
 		_configureSourceSetMain(project);
 		_configureTaskClean(project);
-		_configureTaskJar(
-			jar, liferayOSGiExtension, compileIncludeConfiguration);
+		_configureTaskJar(jar, liferayOSGiExtension);
 		_configureTaskJavadoc(project, liferayOSGiExtension);
 		_configureTaskTest(project);
 		_configureTasksTest(project);
@@ -772,8 +770,7 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 	}
 
 	private void _configureTaskJar(
-		Jar jar, final LiferayOSGiExtension liferayOSGiExtension,
-		final Configuration compileIncludeConfiguration) {
+		Jar jar, final LiferayOSGiExtension liferayOSGiExtension) {
 
 		jar.doFirst(
 			new Action<Task>() {
@@ -786,9 +783,24 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 						GradleUtil.getConvention(
 							jar, BundleTaskConvention.class);
 
-					bundleTaskConvention.setBnd(
-						_getBundleCompleteInstructions(
-							liferayOSGiExtension, compileIncludeConfiguration));
+					Map<String, String> bundleCompleteInstructions =
+						new HashMap<>();
+
+					Map<String, Object> bundleInstructions =
+						liferayOSGiExtension.getBundleInstructions();
+
+					for (Map.Entry<String, Object> entry :
+							bundleInstructions.entrySet()) {
+
+						String value = GradleUtil.toString(entry.getValue());
+
+						if (Validator.isNotNull(value)) {
+							bundleCompleteInstructions.put(
+								entry.getKey(), value);
+						}
+					}
+
+					bundleTaskConvention.setBnd(bundleCompleteInstructions);
 
 					// Since IllegalArgumentException is thrown if set to null,
 					// we have to pass a non-existent file name.
@@ -886,64 +898,6 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 		if (Validator.isNotNull(bundleVersion)) {
 			project.setVersion(bundleVersion);
 		}
-	}
-
-	private Map<String, Object> _getBundleCompleteInstructions(
-		LiferayOSGiExtension liferayOSGiExtension,
-		Configuration compileIncludeConfiguration) {
-
-		Map<String, Object> bundleCompleteInstructions = new HashMap<>();
-
-		Map<String, Object> bundleDefaultInstructions =
-			liferayOSGiExtension.getBundleDefaultInstructions();
-
-		for (Map.Entry<String, Object> entry :
-				bundleDefaultInstructions.entrySet()) {
-
-			bundleCompleteInstructions.put(
-				entry.getKey(), GradleUtil.toString(entry.getValue()));
-		}
-
-		Properties bundleInstructions =
-			liferayOSGiExtension.getBundleInstructions();
-
-		for (String key : bundleInstructions.stringPropertyNames()) {
-			bundleCompleteInstructions.put(
-				key, bundleInstructions.getProperty(key));
-		}
-
-		if (!compileIncludeConfiguration.isEmpty()) {
-			boolean expandCompileInclude =
-				liferayOSGiExtension.isExpandCompileInclude();
-
-			StringBuilder sb = new StringBuilder();
-
-			for (File file : compileIncludeConfiguration) {
-				if (sb.length() > 0) {
-					sb.append(',');
-				}
-
-				if (expandCompileInclude) {
-					sb.append('@');
-				}
-				else {
-					sb.append("lib/=");
-				}
-
-				sb.append(FileUtil.getAbsolutePath(file));
-
-				if (!expandCompileInclude) {
-					sb.append(";lib:=true");
-				}
-			}
-
-			bundleCompleteInstructions.put(
-				Constants.INCLUDERESOURCE + "." +
-					compileIncludeConfiguration.getName(),
-				sb.toString());
-		}
-
-		return bundleCompleteInstructions;
 	}
 
 	private static final String _CACHE_PLUGIN_ID = "com.liferay.cache";

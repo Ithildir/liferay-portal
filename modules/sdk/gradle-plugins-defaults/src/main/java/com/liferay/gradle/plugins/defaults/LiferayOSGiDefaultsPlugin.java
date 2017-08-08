@@ -145,7 +145,6 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.artifacts.maven.Conf2ScopeMapping;
 import org.gradle.api.artifacts.maven.Conf2ScopeMappingContainer;
 import org.gradle.api.artifacts.maven.MavenDeployer;
-import org.gradle.api.execution.TaskExecutionGraph;
 import org.gradle.api.file.ConfigurableFileTree;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.DuplicatesStrategy;
@@ -283,6 +282,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 		final LiferayExtension liferayExtension = GradleUtil.getExtension(
 			project, LiferayExtension.class);
+		LiferayOSGiExtension liferayOSGiExtension = GradleUtil.getExtension(
+			project, LiferayOSGiExtension.class);
 
 		final GitRepo gitRepo = _getGitRepo(project.getProjectDir());
 		final boolean testProject = GradleUtil.isTestProject(project);
@@ -292,7 +293,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		boolean syncReleaseVersions = _syncReleaseVersions(
 			project, portalRootDir, versionOverrideFile, testProject);
 
-		_applyVersionOverrides(project, versionOverrideFile);
+		_applyVersionOverrides(
+			project, liferayOSGiExtension, versionOverrideFile);
 
 		Gradle gradle = project.getGradle();
 
@@ -314,7 +316,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			deployToTools = true;
 		}
 
-		_applyPlugins(project);
+		_applyPlugins(project, liferayOSGiExtension);
 
 		// applyConfigScripts configures the "install" and "uploadArchives"
 		// tasks, and this causes the conf2ScopeMappings.mappings convention
@@ -367,7 +369,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		}
 
 		if (!testProject) {
-			_addTaskCheckOSGiBundleState(project);
+			_addTaskCheckOSGiBundleState(project, liferayOSGiExtension);
 		}
 
 		InstallCacheTask installCacheTask = _addTaskInstallCache(
@@ -402,7 +404,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			project);
 
 		_configureBasePlugin(project, portalRootDir);
-		_configureBundleDefaultInstructions(project, portalRootDir, publishing);
+		_configureBundleDefaultInstructions(
+			project, liferayOSGiExtension, gitRepo, portalRootDir, publishing);
 		_configureConfigurations(project, gitRepo, liferayExtension);
 		_configureDependencyChecker(project);
 		_configureDeployDir(
@@ -418,7 +421,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		_configureSourceSetMain(project);
 		_configureTaskDeploy(project, deployDependenciesTask);
 		_configureTaskJar(project, testProject);
-		_configureTaskJavadoc(project, portalRootDir);
+		_configureTaskJavadoc(project, liferayOSGiExtension, portalRootDir);
 		_configureTaskTest(project);
 		_configureTaskTestIntegration(project);
 		_configureTaskTlddoc(project, portalRootDir);
@@ -504,23 +507,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		if (taskNames.contains("eclipse") || taskNames.contains("idea")) {
 			_forceProjectDependenciesEvaluation(project);
 		}
-
-		TaskExecutionGraph taskExecutionGraph = gradle.getTaskGraph();
-
-		taskExecutionGraph.whenReady(
-			new Closure<Void>(project) {
-
-				@SuppressWarnings("unused")
-				public void doCall(TaskExecutionGraph taskExecutionGraph) {
-					Task jarTask = GradleUtil.getTask(
-						project, JavaPlugin.JAR_TASK_NAME);
-
-					if (taskExecutionGraph.hasTask(jarTask)) {
-						_configureBundleInstructions(project, gitRepo);
-					}
-				}
-
-			});
 	}
 
 	private Configuration _addConfigurationPortalTest(Project project) {
@@ -594,7 +580,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private CheckOSGiBundleStateTask _addTaskCheckOSGiBundleState(
-		final Project project) {
+		final Project project,
+		final LiferayOSGiExtension liferayOSGiExtension) {
 
 		CheckOSGiBundleStateTask checkOSGiBundleStateTask = GradleUtil.addTask(
 			project, CHECK_OSGI_BUNDLE_STATE_TASK_NAME,
@@ -605,8 +592,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 				@Override
 				public String call() throws Exception {
-					return _getBundleInstruction(
-						project, Constants.BUNDLE_SYMBOLICNAME);
+					return liferayOSGiExtension.getBundleInstruction(
+						Constants.BUNDLE_SYMBOLICNAME);
 				}
 
 			});
@@ -1272,8 +1259,13 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			project);
 	}
 
-	private void _applyPlugins(Project project) {
-		if (Validator.isNotNull(_getBundleInstruction(project, "Main-Class"))) {
+	private void _applyPlugins(
+		Project project, LiferayOSGiExtension liferayOSGiExtension) {
+
+		String mainClass = liferayOSGiExtension.getBundleInstruction(
+			"Main-Class");
+
+		if (Validator.isNotNull(mainClass)) {
 			GradleUtil.applyPlugin(project, ApplicationPlugin.class);
 		}
 
@@ -1334,7 +1326,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _applyVersionOverrides(
-		Project project, File versionOverrideFile) {
+		Project project, LiferayOSGiExtension liferayOSGiExtension,
+		File versionOverrideFile) {
 
 		if ((versionOverrideFile == null) || !versionOverrideFile.exists()) {
 			return;
@@ -1349,9 +1342,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			Constants.BUNDLE_VERSION);
 
 		if (Validator.isNotNull(bundleVersion)) {
-			Properties bundleInstructions = _getBundleInstructions(project);
-
-			bundleInstructions.setProperty(
+			liferayOSGiExtension.bundleInstruction(
 				Constants.BUNDLE_VERSION, bundleVersion);
 
 			project.setVersion(bundleVersion);
@@ -1653,69 +1644,68 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureBundleDefaultInstructions(
-		Project project, File portalRootDir, boolean publishing) {
+		Project project, LiferayOSGiExtension liferayOSGiExtension,
+		GitRepo gitRepo, File portalRootDir, boolean publishing) {
 
-		LiferayOSGiExtension liferayOSGiExtension = GradleUtil.getExtension(
-			project, LiferayOSGiExtension.class);
+		liferayOSGiExtension.bundleInstruction(
+			Constants.BUNDLE_VENDOR, "Liferay, Inc.", false);
 
-		Map<String, Object> bundleDefaultInstructions = new HashMap<>();
+		String doNotCopy = liferayOSGiExtension.getBundleInstruction(
+			Constants.DONOTCOPY);
 
-		bundleDefaultInstructions.put(Constants.BUNDLE_VENDOR, "Liferay, Inc.");
-		bundleDefaultInstructions.put(
-			Constants.DONOTCOPY,
-			"(" + LiferayOSGiExtension.DONOTCOPY_DEFAULT + "|.touch)");
-		bundleDefaultInstructions.put(
+		if (doNotCopy.equals(LiferayOSGiExtension.DONOTCOPY_DEFAULT)) {
+			liferayOSGiExtension.bundleInstruction(
+				Constants.DONOTCOPY, "(" + doNotCopy + "|.touch)");
+		}
+
+		liferayOSGiExtension.bundleInstruction(
 			Constants.FIXUPMESSAGES + ".deprecated",
-			"annotations are deprecated");
-		bundleDefaultInstructions.put(Constants.SOURCES, "false");
+			"annotations are deprecated", false);
+		liferayOSGiExtension.bundleInstruction(
+			Constants.SOURCES, "false", false);
 
 		if (publishing) {
-			bundleDefaultInstructions.put(
+			liferayOSGiExtension.bundleInstruction(
 				"Git-Descriptor",
-				"${system-allow-fail;git describe --dirty --always}");
-			bundleDefaultInstructions.put(
-				"Git-SHA", "${system-allow-fail;git rev-list -1 HEAD}");
+				"${system-allow-fail;git describe --dirty --always}", false);
+			liferayOSGiExtension.bundleInstruction(
+				"Git-SHA", "${system-allow-fail;git rev-list -1 HEAD}", false);
 		}
 
 		File appBndFile = _getAppBndFile(project, portalRootDir);
 
 		if (appBndFile != null) {
-			bundleDefaultInstructions.put(
+			liferayOSGiExtension.bundleInstruction(
 				Constants.INCLUDE,
-				FileUtil.getRelativePath(project, appBndFile));
+				FileUtil.getRelativePath(project, appBndFile), false);
 		}
 
 		File packageJsonFile = project.file("package.json");
 
 		if (packageJsonFile.exists()) {
-			bundleDefaultInstructions.put(
+			liferayOSGiExtension.bundleInstruction(
 				Constants.INCLUDERESOURCE + ".packagejson",
 				FileUtil.getRelativePath(project, packageJsonFile));
 		}
-
-		liferayOSGiExtension.bundleDefaultInstructions(
-			bundleDefaultInstructions);
-	}
-
-	private void _configureBundleInstructions(
-		Project project, GitRepo gitRepo) {
-
-		Properties bundleInstructions = _getBundleInstructions(project);
 
 		String projectPath = project.getPath();
 
 		if (projectPath.startsWith(":apps:") ||
 			projectPath.startsWith(":private:") || (gitRepo != null)) {
 
-			String exportPackage = bundleInstructions.getProperty(
+			String exportPackage = liferayOSGiExtension.getBundleInstruction(
 				Constants.EXPORT_PACKAGE);
 
 			if (Validator.isNotNull(exportPackage)) {
 				exportPackage = "!com.liferay.*.kernel.*," + exportPackage;
 
-				bundleInstructions.put(Constants.EXPORT_PACKAGE, exportPackage);
+				liferayOSGiExtension.bundleInstruction(
+					Constants.EXPORT_PACKAGE, exportPackage);
 			}
 		}
+
+		Map<String, Object> bundleInstructions =
+			liferayOSGiExtension.getBundleInstructions();
 
 		if (!bundleInstructions.containsKey(Constants.EXPORT_CONTENTS) &&
 			!bundleInstructions.containsKey("-check")) {
@@ -2788,11 +2778,14 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		compileOptions.setWarnings(false);
 	}
 
-	private void _configureTaskJavadoc(Project project, File portalRootDir) {
+	private void _configureTaskJavadoc(
+		Project project, LiferayOSGiExtension liferayOSGiExtension,
+		File portalRootDir) {
+
 		Javadoc javadoc = (Javadoc)GradleUtil.getTask(
 			project, JavaPlugin.JAVADOC_TASK_NAME);
 
-		_configureTaskJavadocFilter(javadoc);
+		_configureTaskJavadocFilter(javadoc, liferayOSGiExtension);
 		_configureTaskJavadocOptions(javadoc, portalRootDir);
 		_configureTaskJavadocTitle(javadoc);
 
@@ -2806,9 +2799,11 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		}
 	}
 
-	private void _configureTaskJavadocFilter(Javadoc javadoc) {
-		String exportPackage = _getBundleInstruction(
-			javadoc.getProject(), Constants.EXPORT_PACKAGE);
+	private void _configureTaskJavadocFilter(
+		Javadoc javadoc, LiferayOSGiExtension liferayOSGiExtension) {
+
+		String exportPackage = liferayOSGiExtension.getBundleInstruction(
+			Constants.EXPORT_PACKAGE);
 
 		if (Validator.isNull(exportPackage)) {
 			javadoc.exclude("**/");
@@ -3334,19 +3329,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		catch (IOException ioe) {
 			throw new UncheckedIOException(ioe);
 		}
-	}
-
-	private String _getBundleInstruction(Project project, String key) {
-		Properties bundleInstructions = _getBundleInstructions(project);
-
-		return bundleInstructions.getProperty(key);
-	}
-
-	private Properties _getBundleInstructions(Project project) {
-		LiferayOSGiExtension liferayOSGiExtension = GradleUtil.getExtension(
-			project, LiferayOSGiExtension.class);
-
-		return liferayOSGiExtension.getBundleInstructions();
 	}
 
 	private GitRepo _getGitRepo(File dir) {

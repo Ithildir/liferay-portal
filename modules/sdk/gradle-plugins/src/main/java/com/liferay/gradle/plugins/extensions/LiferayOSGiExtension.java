@@ -25,6 +25,8 @@ import com.liferay.ant.bnd.sass.SassAnalyzerPlugin;
 import com.liferay.ant.bnd.service.ServiceAnalyzerPlugin;
 import com.liferay.ant.bnd.social.SocialAnalyzerPlugin;
 import com.liferay.ant.bnd.spring.SpringDependencyAnalyzerPlugin;
+import com.liferay.gradle.plugins.LiferayOSGiPlugin;
+import com.liferay.gradle.plugins.internal.util.FileUtil;
 import com.liferay.gradle.plugins.internal.util.GradleUtil;
 import com.liferay.gradle.util.StringUtil;
 import com.liferay.gradle.util.Validator;
@@ -37,6 +39,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.CompileOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
@@ -52,15 +55,15 @@ public class LiferayOSGiExtension {
 	public LiferayOSGiExtension(Project project) {
 		_project = project;
 
-		_bundleDefaultInstructions.put(
+		_bundleInstructions.put(
 			Constants.BUNDLE_SYMBOLICNAME, project.getName());
-		_bundleDefaultInstructions.put(
+		_bundleInstructions.put(
 			Constants.DONOTCOPY, "(" + DONOTCOPY_DEFAULT + ")");
-		_bundleDefaultInstructions.put(Constants.METATYPE, "*");
-		_bundleDefaultInstructions.put(
+		_bundleInstructions.put(Constants.METATYPE, "*");
+		_bundleInstructions.put(
 			Constants.PLUGIN, StringUtil.merge(_BND_PLUGIN_CLASS_NAMES, ","));
 
-		_bundleDefaultInstructions.put(
+		_bundleInstructions.put(
 			"Javac-Debug",
 			new Callable<String>() {
 
@@ -73,7 +76,7 @@ public class LiferayOSGiExtension {
 
 			});
 
-		_bundleDefaultInstructions.put(
+		_bundleInstructions.put(
 			"Javac-Deprecation",
 			new Callable<String>() {
 
@@ -86,7 +89,7 @@ public class LiferayOSGiExtension {
 
 			});
 
-		_bundleDefaultInstructions.put(
+		_bundleInstructions.put(
 			"Javac-Encoding",
 			new Callable<String>() {
 
@@ -105,36 +108,90 @@ public class LiferayOSGiExtension {
 
 			});
 
-		_bundleDefaultInstructions.put("-jsp", "*.jsp,*.jspf");
-		_bundleDefaultInstructions.put("-sass", "*");
+		_bundleInstructions.put("-jsp", "*.jsp,*.jspf");
+		_bundleInstructions.put("-sass", "*");
+
+		_bundleInstructions.put(
+			Constants.INCLUDERESOURCE + "." +
+				LiferayOSGiPlugin.COMPILE_INCLUDE_CONFIGURATION_NAME,
+			new Callable<String>() {
+
+				@Override
+				public String call() throws Exception {
+					Configuration configuration = GradleUtil.getConfiguration(
+						_project,
+						LiferayOSGiPlugin.COMPILE_INCLUDE_CONFIGURATION_NAME);
+
+					if (configuration.isEmpty()) {
+						return null;
+					}
+
+					boolean expandCompileInclude = isExpandCompileInclude();
+
+					StringBuilder sb = new StringBuilder();
+
+					for (File file : configuration) {
+						if (sb.length() > 0) {
+							sb.append(',');
+						}
+
+						if (expandCompileInclude) {
+							sb.append('@');
+						}
+						else {
+							sb.append("lib/=");
+						}
+
+						sb.append(FileUtil.getAbsolutePath(file));
+
+						if (!expandCompileInclude) {
+							sb.append(";lib:=true");
+						}
+					}
+
+					return sb.toString();
+				}
+
+			});
 
 		File bndFile = project.file("bnd.bnd");
 
 		if (bndFile.exists()) {
-			_bundleInstructions = GUtil.loadProperties(bndFile);
-		}
-		else {
-			_bundleInstructions = new Properties();
+			Properties properties = GUtil.loadProperties(bndFile);
+
+			for (String key : properties.stringPropertyNames()) {
+				_bundleInstructions.put(key, properties.getProperty(key));
+			}
 		}
 	}
 
-	public LiferayOSGiExtension bundleDefaultInstructions(
-		Map<String, ?> bundleDefaultInstructions) {
+	public LiferayOSGiExtension bundleInstruction(String key, Object value) {
+		return bundleInstruction(key, value, true);
+	}
 
-		_bundleDefaultInstructions.putAll(bundleDefaultInstructions);
+	public LiferayOSGiExtension bundleInstruction(
+		String key, Object value, boolean overwrite) {
+
+		if (overwrite || !_bundleInstructions.containsKey(key)) {
+			_bundleInstructions.put(key, value);
+		}
 
 		return this;
 	}
 
-	public Map<String, Object> getBundleDefaultInstructions() {
-		return _bundleDefaultInstructions;
+	public LiferayOSGiExtension bundleInstructions(
+		Map<String, ?> bundleInstructions) {
+
+		_bundleInstructions.putAll(bundleInstructions);
+
+		return this;
 	}
 
 	public String getBundleInstruction(String key) {
-		return _bundleInstructions.getProperty(key);
+		return GradleUtil.toString(_bundleInstructions.get(key));
 	}
 
-	public Properties getBundleInstructions() {
+	public Map<String, Object> getBundleInstructions() {
 		return _bundleInstructions;
 	}
 
@@ -150,12 +207,10 @@ public class LiferayOSGiExtension {
 		_autoUpdateXml = autoUpdateXml;
 	}
 
-	public void setBundleDefaultInstructions(
-		Map<String, ?> bundleDefaultInstructions) {
+	public void setBundleInstructions(Map<String, ?> bundleInstructions) {
+		_bundleInstructions.clear();
 
-		_bundleDefaultInstructions.clear();
-
-		bundleDefaultInstructions(bundleDefaultInstructions);
+		bundleInstructions(bundleInstructions);
 	}
 
 	public void setExpandCompileInclude(boolean expandCompileInclude) {
@@ -187,9 +242,7 @@ public class LiferayOSGiExtension {
 	};
 
 	private boolean _autoUpdateXml = true;
-	private final Map<String, Object> _bundleDefaultInstructions =
-		new HashMap<>();
-	private final Properties _bundleInstructions;
+	private final Map<String, Object> _bundleInstructions = new HashMap<>();
 	private boolean _expandCompileInclude;
 	private final Project _project;
 
