@@ -1,6 +1,9 @@
+import aQute.bnd.gradle.Bundle
+
 import com.liferay.gradle.util.copy.RenameDependencyClosure
 
-import org.dm.gradle.plugins.bundle.JarBuilder
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
 
 task copySystemPackagesExtraLibs(type: Copy)
 task copySystemPackagesExtraManifest(type: Copy)
@@ -12,42 +15,32 @@ File systemPackagesExtraManifestFile = file("system.packages.extra.mf")
 if (!System.getenv("JENKINS_HOME") || !systemPackagesExtraManifestFile.exists()) {
 	systemPackagesExtraManifestFile = new File(buildDir, "system.packages.extra.mf")
 
-	task buildSystemPackagesExtraManifest
+	task buildSystemPackagesExtraManifest(type: Bundle)
 
 	buildSystemPackagesExtraManifest {
+		appendix = "extra"
+		bndfile = "system.packages.extra.bnd"
+
 		dependsOn classes
 		dependsOn copySystemPackagesExtraLibs
 
+		destinationDir = buildDir
+
+		doFirst {
+			ext.clock = new Clock()
+		}
+
 		doLast {
-			Clock clock = new Clock()
+			delete systemPackagesExtraManifestFile
 
-			JarBuilder jarBuilder = bundle.jarBuilderFactory.create()
+			JarFile jarFile = new JarFile(archivePath)
 
-			jarBuilder.withBase projectDir
+			jarFile.withCloseable {
+				InputStream inputStream = jarFile.getInputStream(it.getEntry("META-INF/MANIFEST.MF"))
 
-			Map<String, String> properties = liferayOSGi.bundleDefaultInstructions
-
-			properties["-check"] = "imports"
-			properties["-fixupmessages"] = '"Classpath is empty. Private-Package ...";is:=ignore'
-			properties["-include"] = "system.packages.extra.bnd"
-
-			jarBuilder.withClasspath new File[0]
-			jarBuilder.withFailOnError true
-			jarBuilder.withName "system.packages.extra"
-			jarBuilder.withProperties properties
-			jarBuilder.withResources new File[0]
-
-			jarBuilder.withSourcepath sourceSets.main.allSource.srcDirs.findAll {
-				it.directory
-			}
-
-			jarBuilder.withTrace false
-			jarBuilder.withVersion project.version
-
-			systemPackagesExtraManifestFile.parentFile.mkdirs()
-
-			systemPackagesExtraManifestFile.withOutputStream {
-				jarBuilder.writeManifestTo it
+				inputStream.withStream {
+					systemPackagesExtraManifestFile << it
+				}
 			}
 
 			logger.lifecycle "Building the system.packages.extra.mf file took {}.", clock.time
@@ -60,10 +53,6 @@ if (!System.getenv("JENKINS_HOME") || !systemPackagesExtraManifestFile.exists())
 }
 else {
 	logger.lifecycle "Reusing file {}.", systemPackagesExtraManifestFile.absolutePath
-}
-
-bundle {
-	instruction "system.packages.extra.manifest.file", relativePath(systemPackagesExtraManifestFile)
 }
 
 copySystemPackagesExtraLibs {
@@ -99,4 +88,14 @@ if (buildProfile != "slim") {
 
 liferay {
 	deployDir = file("${liferayHome}/osgi/core")
+}
+
+liferayOSGi {
+	String systemPackagesExtraManifestFileName = relativePath(systemPackagesExtraManifestFile)
+
+	if (File.separatorChar != '/') {
+		systemPackagesExtraManifestFileName = systemPackagesExtraManifestFileName.replace(File.separatorChar, '/' as char)
+	}
+
+	bundleInstruction "system.packages.extra.manifest.file", systemPackagesExtraManifestFileName
 }

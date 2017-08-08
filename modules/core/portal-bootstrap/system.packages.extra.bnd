@@ -274,6 +274,8 @@ Export-Package:\
 	\
 	*
 Import-Package: !*
+-check: imports
+-fixupmessages: "Classpath is empty. Private-Package ...";is:=ignore
 -includeresource:\
 	-@lib/com.liferay.portal.app.license.api.jar,\
 	-@lib/com.liferay.portal.impl.blogs.compat.jar,\

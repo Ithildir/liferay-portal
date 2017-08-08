@@ -15,10 +15,6 @@ Set<Project> projectTemplateProjects = project.parent.subprojects.findAll {
 	it.name.startsWith "project-templates-"
 }
 
-bundle {
-	includeTransitiveDependencies = true
-}
-
 configurations {
 	mavenDistribution
 	projectTemplates
