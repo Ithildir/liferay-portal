@@ -18,6 +18,7 @@ import com.liferay.css.builder.CSSBuilderArgs;
 import com.liferay.gradle.util.FileUtil;
 import com.liferay.gradle.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
+import com.liferay.gradle.util.tasks.ForkableJavaExec;
 
 import java.io.File;
 
@@ -38,7 +39,6 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectories;
 import org.gradle.api.tasks.OutputFiles;
@@ -49,7 +49,7 @@ import org.gradle.util.GUtil;
 /**
  * @author Andrea Di Giorgi
  */
-public class BuildCSSTask extends JavaExec {
+public class BuildCSSTask extends ForkableJavaExec {
 
 	public BuildCSSTask() {
 		setDefaultCharacterEncoding(StandardCharsets.UTF_8.toString());

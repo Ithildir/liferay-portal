@@ -127,6 +127,7 @@ public class CSSBuilderPlugin implements Plugin<Project> {
 			project, BUILD_CSS_TASK_NAME, BuildCSSTask.class);
 
 		buildCSSTask.setDescription("Build CSS files.");
+		buildCSSTask.setFork(true);
 		buildCSSTask.setGroup(BasePlugin.BUILD_GROUP);
 
 		PluginContainer pluginContainer = project.getPlugins();
