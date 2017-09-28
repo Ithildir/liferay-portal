@@ -73,7 +73,7 @@ public class UnforkedJavaExec extends JavaExec {
 
 			Method mainMethod = clazz.getDeclaredMethod("main", String[].class);
 
-			String[] mainArgs = args.toArray(new String[args.size()]);
+			String[] argsArray = args.toArray(new String[args.size()]);
 
 			InputStream inputStream = getStandardInput();
 
@@ -93,7 +93,7 @@ public class UnforkedJavaExec extends JavaExec {
 				System.setErr(new PrintStream(errorOutputStream));
 			}
 
-			mainMethod.invoke(null, (Object)mainArgs);
+			mainMethod.invoke(null, (Object)argsArray);
 		}
 		catch (Exception e) {
 			if (isIgnoreExitValue()) {
