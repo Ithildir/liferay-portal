@@ -66,7 +66,7 @@ public class UnforkedJavaExec extends JavaExec {
 
 			Method mainMethod = clazz.getDeclaredMethod("main", String[].class);
 
-			String[] mainArgs = args.toArray(new String[0]);
+			String[] mainArgs = args.toArray(new String[args.size()]);
 
 			InputStream inputStream = getStandardInput();
 
@@ -115,7 +115,8 @@ public class UnforkedJavaExec extends JavaExec {
 			}
 		}
 
-		return URLClassLoader.newInstance(urls.toArray(new URL[0]), null);
+		return URLClassLoader.newInstance(
+			urls.toArray(new URL[urls.size()]), null);
 	}
 
 	private static final Logger _logger = Logging.getLogger(
