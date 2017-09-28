@@ -39,6 +39,7 @@ import org.gradle.api.tasks.JavaExec;
  */
 public class UnforkedJavaExec extends JavaExec {
 
+	@Override
 	public void exec() {
 		List<String> args = getArgs();
 		FileCollection classpath = getClasspath();
