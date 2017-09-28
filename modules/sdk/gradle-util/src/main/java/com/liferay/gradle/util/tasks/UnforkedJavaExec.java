@@ -14,6 +14,8 @@
 
 package com.liferay.gradle.util.tasks;
 
+import com.liferay.gradle.util.Validator;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -24,6 +26,8 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+
+import java.nio.charset.Charset;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +51,35 @@ public class UnforkedJavaExec extends JavaExec {
 			return;
 		}
 
+		String defaultCharacterEncoding = getDefaultCharacterEncoding();
+		String mainClassName = getMain();
+
+		if (Validator.isNotNull(defaultCharacterEncoding)) {
+			Charset charset = Charset.defaultCharset();
+
+			String name = charset.name();
+
+			if (!defaultCharacterEncoding.equals(name)) {
+				StringBuilder sb = new StringBuilder();
+
+				sb.append("Unable to execute class '{}' without forking, the ");
+				sb.append("system character encoding ({}) does not match ");
+				sb.append("with the one ({}) required by {}. Please set ");
+				sb.append("'-Dfile.encoding={}' in the GRADLE_OPTS ");
+				sb.append("environment variable.");
+
+				_logger.error(
+					sb.toString(), mainClassName, name,
+					defaultCharacterEncoding, this, defaultCharacterEncoding);
+
+				super.exec();
+
+				return;
+			}
+		}
+
 		List<String> args = getArgs();
 		FileCollection classpath = getClasspath();
-		String mainClassName = getMain();
 
 		PrintStream originalErrorStream = System.err;
 		InputStream originalInputStream = System.in;
