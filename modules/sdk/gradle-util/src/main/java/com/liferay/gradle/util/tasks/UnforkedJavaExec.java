@@ -33,14 +33,12 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.JavaExec;
-import org.gradle.api.tasks.TaskAction;
 
 /**
  * @author David Truong
  */
 public class UnforkedJavaExec extends JavaExec {
 
-	@TaskAction
 	public void exec() {
 		List<String> args = getArgs();
 		FileCollection classpath = getClasspath();
