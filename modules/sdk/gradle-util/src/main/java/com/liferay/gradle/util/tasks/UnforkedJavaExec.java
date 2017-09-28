@@ -41,6 +41,12 @@ public class UnforkedJavaExec extends JavaExec {
 
 	@Override
 	public void exec() {
+		if (isFork()) {
+			super.exec();
+
+			return;
+		}
+
 		List<String> args = getArgs();
 		FileCollection classpath = getClasspath();
 		String mainClassName = getMain();
@@ -109,6 +115,14 @@ public class UnforkedJavaExec extends JavaExec {
 		}
 	}
 
+	public boolean isFork() {
+		return _fork;
+	}
+
+	public void setFork(boolean fork) {
+		_fork = fork;
+	}
+
 	private ClassLoader _createClassLoader(FileCollection classpath)
 		throws Exception {
 
@@ -128,5 +142,7 @@ public class UnforkedJavaExec extends JavaExec {
 
 	private static final Logger _logger = Logging.getLogger(
 		UnforkedJavaExec.class);
+
+	private boolean _fork;
 
 }
