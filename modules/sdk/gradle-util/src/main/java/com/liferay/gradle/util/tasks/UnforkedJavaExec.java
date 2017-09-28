@@ -41,20 +41,19 @@ public class UnforkedJavaExec extends JavaExec {
 
 	@TaskAction
 	public void exec() {
-		PrintStream originalErrStream = System.err;
-
-		InputStream originalInstream = System.in;
-
-		PrintStream originalOutStream = System.out;
+		PrintStream originalErrorStream = System.err;
+		InputStream originalInputStream = System.in;
+		PrintStream originalOutputStream = System.out;
 
 		Thread currentThread = Thread.currentThread();
 
-		ClassLoader previousContextClassLoader =
+		ClassLoader originalContextClassLoader =
 			currentThread.getContextClassLoader();
 
-		String previousClasspath = System.getProperty("java.class.path");
+		String originalClasspath = System.getProperty("java.class.path");
 
 		try {
+			List<String> args = getArgs();
 			FileCollection classpath = getClasspath();
 
 			ClassLoader classLoader = _createClassLoader(classpath);
@@ -63,13 +62,11 @@ public class UnforkedJavaExec extends JavaExec {
 
 			System.setProperty("java.class.path", classpath.getAsPath());
 
-			Class<?> c = classLoader.loadClass(getMain());
+			Class<?> clazz = classLoader.loadClass(getMain());
 
-			Class<?>[] argTypes = {String[].class};
+			Method mainMethod = clazz.getDeclaredMethod("main", String[].class);
 
-			Method main = c.getDeclaredMethod("main", argTypes);
-
-			String[] mainArgs = getArgs().toArray(new String[0]);
+			String[] mainArgs = args.toArray(new String[0]);
 
 			InputStream inputStream = getStandardInput();
 
@@ -89,21 +86,19 @@ public class UnforkedJavaExec extends JavaExec {
 				System.setErr(new PrintStream(errorOutputStream));
 			}
 
-			main.invoke(null, (Object)mainArgs);
+			mainMethod.invoke(null, (Object)mainArgs);
 		}
 		catch (Exception e) {
 			_logger.error("Error running method", e);
 		}
 		finally {
-			System.setErr(originalErrStream);
+			System.setErr(originalErrorStream);
+			System.setIn(originalInputStream);
+			System.setOut(originalOutputStream);
 
-			System.setIn(originalInstream);
+			currentThread.setContextClassLoader(originalContextClassLoader);
 
-			System.setOut(originalOutStream);
-
-			currentThread.setContextClassLoader(previousContextClassLoader);
-
-			System.setProperty("java.class.path", previousClasspath);
+			System.setProperty("java.class.path", originalClasspath);
 		}
 	}
 
