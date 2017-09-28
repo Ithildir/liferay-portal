@@ -28,6 +28,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -41,6 +42,10 @@ public class UnforkedJavaExec extends JavaExec {
 
 	@TaskAction
 	public void exec() {
+		List<String> args = getArgs();
+		FileCollection classpath = getClasspath();
+		String mainClassName = getMain();
+
 		PrintStream originalErrorStream = System.err;
 		InputStream originalInputStream = System.in;
 		PrintStream originalOutputStream = System.out;
@@ -53,16 +58,13 @@ public class UnforkedJavaExec extends JavaExec {
 		String originalClasspath = System.getProperty("java.class.path");
 
 		try {
-			List<String> args = getArgs();
-			FileCollection classpath = getClasspath();
-
 			ClassLoader classLoader = _createClassLoader(classpath);
 
 			currentThread.setContextClassLoader(classLoader);
 
 			System.setProperty("java.class.path", classpath.getAsPath());
 
-			Class<?> clazz = classLoader.loadClass(getMain());
+			Class<?> clazz = classLoader.loadClass(mainClassName);
 
 			Method mainMethod = clazz.getDeclaredMethod("main", String[].class);
 
@@ -89,7 +91,13 @@ public class UnforkedJavaExec extends JavaExec {
 			mainMethod.invoke(null, (Object)mainArgs);
 		}
 		catch (Exception e) {
-			_logger.error("Error running method", e);
+			if (isIgnoreExitValue()) {
+				_logger.error("Unable to execute class '{}'", e, mainClassName);
+			}
+			else {
+				throw new GradleException(
+					"Unable to execute class '" + mainClassName + "'", e);
+			}
 		}
 		finally {
 			System.setErr(originalErrorStream);
