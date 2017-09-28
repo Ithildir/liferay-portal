@@ -67,7 +67,9 @@ public class UnforkedJavaExec extends JavaExec {
 
 			currentThread.setContextClassLoader(classLoader);
 
-			System.setProperty("java.class.path", classpath.getAsPath());
+			String classpathString = classpath.getAsPath();
+
+			System.setProperty("java.class.path", classpathString);
 
 			Class<?> clazz = classLoader.loadClass(mainClassName);
 
@@ -91,6 +93,12 @@ public class UnforkedJavaExec extends JavaExec {
 
 			if (outputStream != null) {
 				System.setErr(new PrintStream(errorOutputStream));
+			}
+
+			if (_logger.isInfoEnabled()) {
+				_logger.info(
+					"Executing class '{}' with arguments {} and classpath {}",
+					mainClassName, argsArray, classpathString);
 			}
 
 			mainMethod.invoke(null, (Object)argsArray);
