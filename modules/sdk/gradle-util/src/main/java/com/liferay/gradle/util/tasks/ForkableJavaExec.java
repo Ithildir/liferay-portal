@@ -41,7 +41,7 @@ import org.gradle.api.tasks.JavaExec;
 /**
  * @author David Truong
  */
-public class UnforkedJavaExec extends JavaExec {
+public class ForkableJavaExec extends JavaExec {
 
 	@Override
 	public void exec() {
@@ -179,7 +179,7 @@ public class UnforkedJavaExec extends JavaExec {
 	}
 
 	private static final Logger _logger = Logging.getLogger(
-		UnforkedJavaExec.class);
+		ForkableJavaExec.class);
 
 	private boolean _fork;
 
