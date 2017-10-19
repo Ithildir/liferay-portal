@@ -2504,6 +2504,21 @@ is found in a parent directory.
 ### Changed
 - [LPS-75901]: Update the [Liferay Gradle Plugins] dependency to version 3.5.52.
 
+## 5.2.5 - 2017-11-28
+
+### Changed
+- [LPS-75359]: Make the `testCompile` configuration extend the
+`compileClasspath` configuration, instead of adding it directly into the `test`
+configuration compile and runtime classpaths.
+- [LPS-75359]: On test projects, or if the project contains the
+`.lfrbuild-portal`, `.lfrbuild-portal-private`, or `.lfrbuild-public` marker
+file, always use default versions in the `testCompileClasspath` and
+`testRuntime` configurations.
+
+### Removed
+- [LPS-75359]: Remove inclusion of the `portal` configuration from the `test`
+configuration compile and runtime classpaths.
+
 [Find Security Bugs]: https://github.com/liferay/liferay-portal/tree/master/modules/third-party/com-h3xstream-findsecbugs
 [Gradle License Report]: https://github.com/jk1/Gradle-License-Report
 [Liferay CDN]: https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public
