@@ -353,14 +353,16 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 			_addDependenciesPortalTest(project);
 			_addDependenciesTestCompile(project);
+			_configureConfigurationTestCompile(project);
 			_configureConfigurationTest(
-				project, JavaPlugin.TEST_COMPILE_CLASSPATH_CONFIGURATION_NAME);
+				project, JavaPlugin.TEST_COMPILE_CLASSPATH_CONFIGURATION_NAME,
+				liferayExtension);
 			_configureConfigurationTest(
-				project, JavaPlugin.TEST_RUNTIME_CONFIGURATION_NAME);
+				project, JavaPlugin.TEST_RUNTIME_CONFIGURATION_NAME,
+				liferayExtension);
 			_configureEclipse(project, portalTestConfiguration);
 			_configureIdea(project, portalTestConfiguration);
-			_configureSourceSetTest(
-				project, portalConfiguration, portalTestConfiguration);
+			_configureSourceSetTest(project, portalTestConfiguration);
 			_configureSourceSetTestIntegration(
 				project, portalConfiguration, portalTestConfiguration);
 
@@ -2168,7 +2170,9 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			});
 	}
 
-	private void _configureConfigurationTest(Project project, String name) {
+	private void _configureConfigurationTest(
+		Project project, String name, final LiferayExtension liferayExtension) {
+
 		final Configuration configuration = GradleUtil.getConfiguration(
 			project, name);
 
@@ -2197,6 +2201,14 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 						dependencyResolveDetails.useTarget(target);
 					}
+					else {
+						String version = liferayExtension.getDefaultVersion(
+							group, name, null);
+
+						if (Validator.isNotNull(version)) {
+							dependencyResolveDetails.useVersion(version);
+						}
+					}
 				}
 
 				private String _getEasyConfDependencyTarget(
@@ -2223,6 +2235,17 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 				}
 
 			});
+	}
+
+	private void _configureConfigurationTestCompile(Project project) {
+		Configuration testCompileConfiguration = GradleUtil.getConfiguration(
+			project, JavaPlugin.TEST_COMPILE_CONFIGURATION_NAME);
+
+		Configuration compileClasspathConfiguration =
+			GradleUtil.getConfiguration(
+				project, JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME);
+
+		testCompileConfiguration.extendsFrom(compileClasspathConfiguration);
 	}
 
 	private void _configureConfigurationTransitive(
@@ -2524,26 +2547,19 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureSourceSetTest(
-		Project project, Configuration portalConfiguration,
-		Configuration portalTestConfiguration) {
+		Project project, Configuration portalTestConfiguration) {
 
 		SourceSet sourceSet = GradleUtil.getSourceSet(
 			project, SourceSet.TEST_SOURCE_SET_NAME);
 
 		_configureSourceSetClassesDir(project, sourceSet, "test-classes/unit");
 
-		Configuration compileClasspathConfiguration =
-			GradleUtil.getConfiguration(
-				project, JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME);
-
 		sourceSet.setCompileClasspath(
 			FileUtil.join(
-				compileClasspathConfiguration, portalConfiguration,
 				sourceSet.getCompileClasspath(), portalTestConfiguration));
 
 		sourceSet.setRuntimeClasspath(
 			FileUtil.join(
-				compileClasspathConfiguration, portalConfiguration,
 				sourceSet.getRuntimeClasspath(), portalTestConfiguration));
 	}
 
