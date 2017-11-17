@@ -306,7 +306,7 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private Properties _getAppProperties(Project project) {
-		File relengDir = LiferayRelengPlugin.getRelengDir(project);
+		File relengDir = GradlePluginsDefaultsUtil.getRelengDir(project);
 
 		if (relengDir != null) {
 			File appPropertiesFile = new File(relengDir, "app.properties");

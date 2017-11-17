@@ -103,8 +103,9 @@ public class MavenDefaultsPlugin extends BaseDefaultsPlugin<MavenPlugin> {
 					return;
 				}
 
-				File relengDir = LiferayRelengPlugin.getRelengDir(project);
-				File releaseRelengDir = LiferayRelengPlugin.getRelengDir(
+				File relengDir = GradlePluginsDefaultsUtil.getRelengDir(
+					project);
+				File releaseRelengDir = GradlePluginsDefaultsUtil.getRelengDir(
 					releaseProjectDir);
 
 				if ((relengDir == null) && releaseRelengDir.isDirectory()) {

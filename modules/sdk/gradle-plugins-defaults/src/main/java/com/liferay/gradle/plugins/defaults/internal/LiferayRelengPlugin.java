@@ -107,25 +107,9 @@ public class LiferayRelengPlugin implements Plugin<Project> {
 	public static final String WRITE_ARTIFACT_PUBLISH_COMMANDS =
 		"writeArtifactPublishCommands";
 
-	public static File getRelengDir(File projectDir) {
-		File rootDir = GradleUtil.getRootDir(projectDir, _RELENG_DIR_NAME);
-
-		if (rootDir == null) {
-			return null;
-		}
-
-		File relengDir = new File(rootDir, _RELENG_DIR_NAME);
-
-		return new File(relengDir, FileUtil.relativize(projectDir, rootDir));
-	}
-
-	public static File getRelengDir(Project project) {
-		return getRelengDir(project.getProjectDir());
-	}
-
 	@Override
 	public void apply(final Project project) {
-		File relengDir = getRelengDir(project);
+		File relengDir = GradlePluginsDefaultsUtil.getRelengDir(project);
 
 		if (relengDir == null) {
 			return;
@@ -933,7 +917,5 @@ public class LiferayRelengPlugin implements Plugin<Project> {
 
 		return false;
 	}
-
-	private static final String _RELENG_DIR_NAME = ".releng";
 
 }

@@ -132,6 +132,22 @@ public class GradlePluginsDefaultsUtil {
 		}
 	}
 
+	public static File getRelengDir(File projectDir) {
+		File rootDir = GradleUtil.getRootDir(projectDir, _RELENG_DIR_NAME);
+
+		if (rootDir == null) {
+			return null;
+		}
+
+		File relengDir = new File(rootDir, _RELENG_DIR_NAME);
+
+		return new File(relengDir, FileUtil.relativize(projectDir, rootDir));
+	}
+
+	public static File getRelengDir(Project project) {
+		return getRelengDir(project.getProjectDir());
+	}
+
 	public static boolean isPrivateProject(Project project) {
 		String path = project.getPath();
 
@@ -206,6 +222,8 @@ public class GradlePluginsDefaultsUtil {
 			project.setVersion(version + SNAPSHOT_VERSION_SUFFIX);
 		}
 	}
+
+	private static final String _RELENG_DIR_NAME = ".releng";
 
 	private static final String _TEST_PROJECT_SUFFIX = "-test";
 
