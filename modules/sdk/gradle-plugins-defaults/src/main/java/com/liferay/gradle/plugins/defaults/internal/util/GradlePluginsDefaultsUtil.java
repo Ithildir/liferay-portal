@@ -133,19 +133,15 @@ public class GradlePluginsDefaultsUtil {
 	}
 
 	public static File getRelengDir(File projectDir) {
-		File rootDir = GradleUtil.getRootDir(projectDir, _RELENG_DIR_NAME);
-
-		if (rootDir == null) {
-			return null;
-		}
-
-		File relengDir = new File(rootDir, _RELENG_DIR_NAME);
-
-		return new File(relengDir, FileUtil.relativize(projectDir, rootDir));
+		return _getParallelDir(projectDir, _RELENG_DIR_NAME);
 	}
 
 	public static File getRelengDir(Project project) {
 		return getRelengDir(project.getProjectDir());
+	}
+
+	public static File getSnapshotDir(Project project) {
+		return _getParallelDir(project.getProjectDir(), _SNAPSHOTS_DIR_NAME);
 	}
 
 	public static boolean isPrivateProject(Project project) {
@@ -223,7 +219,21 @@ public class GradlePluginsDefaultsUtil {
 		}
 	}
 
+	private static File _getParallelDir(File projectDir, String name) {
+		File rootDir = GradleUtil.getRootDir(projectDir, name);
+
+		if (rootDir == null) {
+			return null;
+		}
+
+		File relengDir = new File(rootDir, name);
+
+		return new File(relengDir, FileUtil.relativize(projectDir, rootDir));
+	}
+
 	private static final String _RELENG_DIR_NAME = ".releng";
+
+	private static final String _SNAPSHOTS_DIR_NAME = ".snapshots";
 
 	private static final String _TEST_PROJECT_SUFFIX = "-test";
 

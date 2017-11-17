@@ -46,7 +46,10 @@ import org.gradle.api.artifacts.component.ComponentSelector;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
+import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.SourceDirectorySet;
+import org.gradle.api.internal.file.copy.CopySpecInternal;
+import org.gradle.api.internal.file.copy.DefaultCopySpec;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.plugins.BasePluginConvention;
 import org.gradle.api.plugins.PluginContainer;
@@ -317,6 +320,37 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 
 		if ((mavenLocalDir != null) && FileUtil.isChild(file, mavenLocalDir)) {
 			return true;
+		}
+
+		return false;
+	}
+
+	public static boolean replaceCopySpecSourcePath(
+		CopySpec copySpec, Object oldSourcePath, Object newSourcePath) {
+
+		if (copySpec instanceof DefaultCopySpec) {
+			DefaultCopySpec defaultCopySpec = (DefaultCopySpec)copySpec;
+
+			Set<Object> sourcePaths = defaultCopySpec.getSourcePaths();
+
+			if (sourcePaths.remove(oldSourcePath)) {
+				sourcePaths.add(newSourcePath);
+
+				return true;
+			}
+		}
+
+		if (copySpec instanceof CopySpecInternal) {
+			CopySpecInternal copySpecInternal = (CopySpecInternal)copySpec;
+
+			for (CopySpec childCopySpec : copySpecInternal.getChildren()) {
+				boolean replaced = replaceCopySpecSourcePath(
+					childCopySpec, oldSourcePath, newSourcePath);
+
+				if (replaced) {
+					return true;
+				}
+			}
 		}
 
 		return false;

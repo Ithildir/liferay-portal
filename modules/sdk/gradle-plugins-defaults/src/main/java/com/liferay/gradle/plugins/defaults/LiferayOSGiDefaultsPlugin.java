@@ -98,6 +98,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -248,6 +249,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 	public static final String DEPLOY_DEPENDENCIES_TASK_NAME =
 		"deployDependencies";
+
+	public static final String DEPLOY_IF_STALE_PROPERTY_NAME = "deployIfStale";
 
 	public static final String DEPLOY_TOOL_TASK_NAME = "deployTool";
 
@@ -508,6 +511,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 					_configureArtifacts(
 						project, jarJSPsTask, jarJavadocTask, jarSourcesTask,
 						jarSourcesCommercialTask, jarTLDDocTask);
+					_configureTaskDeployIfStale(project);
 					_configureTaskJarSources(jarSourcesTask);
 					_configureTaskJarSources(jarSourcesCommercialTask);
 					_configureTaskUpdateFileVersions(
@@ -2905,6 +2909,171 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		deployTask.finalizedBy(deployDepenciesTask);
 	}
 
+	private void _configureTaskDeployIfStale(Project project) {
+		if (!GradleUtil.getProperty(
+				project, DEPLOY_IF_STALE_PROPERTY_NAME, false)) {
+
+			return;
+		}
+
+		Task deployTask = GradleUtil.getTask(
+			project, LiferayBasePlugin.DEPLOY_TASK_NAME);
+
+		Logger logger = deployTask.getLogger();
+
+		if (!(deployTask instanceof Copy)) {
+			if (logger.isInfoEnabled()) {
+				logger.info(
+					"Unable to skip deployment of {}, {} is not a copy task",
+					project, deployTask);
+			}
+
+			return;
+		}
+
+		File snapshotDir = GradlePluginsDefaultsUtil.getSnapshotDir(project);
+
+		if (snapshotDir == null) {
+			if (logger.isInfoEnabled()) {
+				logger.info(
+					"Unable to skip deployment of {}, {} not found", project,
+					snapshotDir);
+			}
+
+			return;
+		}
+
+		File snapshotFile = new File(snapshotDir, _SNAPSHOT_FILE_NAME);
+
+		if (!snapshotFile.exists()) {
+			if (logger.isInfoEnabled()) {
+				logger.info(
+					"Unable to skip deployment of {}, {} not found", project,
+					snapshotFile);
+			}
+
+			return;
+		}
+
+		Configuration configuration = GradleUtil.getConfiguration(
+			project, JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME);
+
+		DependencySet dependencySet = configuration.getAllDependencies();
+
+		Set<ProjectDependency> projectDependencies = dependencySet.withType(
+			ProjectDependency.class);
+
+		if (!projectDependencies.isEmpty()) {
+			if (logger.isInfoEnabled()) {
+				logger.info(
+					"Unable to skip deployment of {}, it contains project " +
+						"dependencies",
+					project);
+			}
+
+			return;
+		}
+
+		String includeResource = _getBundleInstruction(
+			project, Constants.INCLUDERESOURCE);
+
+		if (Validator.isNotNull(includeResource) &&
+			includeResource.contains("../")) {
+
+			if (logger.isInfoEnabled()) {
+				logger.info(
+					"Unable to skip deployment of {}, \"" +
+						Constants.INCLUDERESOURCE +
+							"\" instruction contains relative paths",
+					project);
+			}
+
+			return;
+		}
+
+		Properties properties = GUtil.loadProperties(snapshotFile);
+
+		long lastModifiedTime = Long.valueOf(
+			properties.getProperty("snapshot.last.modified"));
+
+		if (_isSnapshotStale(project, lastModifiedTime)) {
+			if (logger.isInfoEnabled()) {
+				Date date = new Date(lastModifiedTime);
+
+				logger.info(
+					"Unable to to skip deployment of {}, latest snapshot " +
+						"created at {} is stale",
+					project, date);
+			}
+
+			return;
+		}
+
+		final String snapshotURL = properties.getProperty("snapshot.url");
+
+		int start = snapshotURL.lastIndexOf('/') + 1;
+
+		int end = snapshotURL.indexOf('-', start);
+
+		String name = snapshotURL.substring(start, end);
+
+		String version = snapshotURL.substring(
+			end + 1, snapshotURL.length() - 4);
+
+		ConfigurationContainer configurationContainer =
+			project.getConfigurations();
+		DependencyHandler dependencyHandler = project.getDependencies();
+
+		Map<String, String> args = new HashMap<>();
+
+		args.put("group", _GROUP);
+		args.put("name", name);
+		args.put("version", version);
+
+		Dependency dependency = dependencyHandler.create(args);
+
+		configuration = configurationContainer.detachedConfiguration(
+			dependency);
+
+		configuration.setTransitive(false);
+
+		Task jarTask = GradleUtil.getTask(project, JavaPlugin.JAR_TASK_NAME);
+
+		Copy copy = (Copy)deployTask;
+
+		boolean replaced = GradleUtil.replaceCopySpecSourcePath(
+			copy.getRootSpec(), jarTask, configuration);
+
+		if (!replaced) {
+			if (logger.isWarnEnabled()) {
+				logger.warn(
+					"Unable to to skip deployment of {}, {} cannot be " +
+						"properly configured",
+					project, deployTask);
+			}
+
+			return;
+		}
+
+		deployTask.doLast(
+			new Action<Task>() {
+
+				@Override
+				public void execute(Task task) {
+					Logger logger = task.getLogger();
+
+					if (logger.isLifecycleEnabled()) {
+						logger.lifecycle(
+							"Deployed {} for {}", snapshotURL,
+							task.getProject());
+					}
+				}
+
+			});
+
+		deployTask.setDependsOn(Collections.emptySet());
+	}
+
 	private void _configureTaskFindBugs(FindBugs findBugs) {
 		Project project = findBugs.getProject();
 
@@ -4011,6 +4180,12 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			return true;
 		}
 
+		return _isSnapshotStale(project, lastModifiedTime);
+	}
+
+	private boolean _isSnapshotStale(Project project, long lastModifiedTime) {
+		Logger logger = project.getLogger();
+
 		// Remove milliseconds from Unix epoch
 
 		lastModifiedTime = lastModifiedTime / 1000;
@@ -4243,6 +4418,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 	private static final String _SERVICE_BUILDER_PORTAL_TOOL_NAME =
 		"com.liferay.portal.tools.service.builder";
+
+	private static final String _SNAPSHOT_FILE_NAME = "snapshot.properties";
 
 	private static final String[] _SNAPSHOT_PROPERTY_NAMES =
 		{SNAPSHOT_IF_STALE_PROPERTY_NAME};
