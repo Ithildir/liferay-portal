@@ -145,6 +145,10 @@ gradle.beforeProject {
 				xmltask rootProject.files("../lib/development/xmltask.jar")
 			}
 
+			test {
+				ignoreFailures = false
+			}
+
 			testIntegration {
 				doLast {
 					String databaseType = System.properties["database.type"]
