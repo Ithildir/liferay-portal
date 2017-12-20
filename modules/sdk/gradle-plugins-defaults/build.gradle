@@ -1,5 +1,8 @@
 import com.liferay.gradle.util.copy.ReplaceLeadingPathAction
 
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
 String pluginsSDKVersion = project.properties["plugins.sdk.version"]
 
 configurations {

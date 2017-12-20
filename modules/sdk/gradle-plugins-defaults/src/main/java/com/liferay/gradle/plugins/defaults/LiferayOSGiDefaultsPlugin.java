@@ -30,6 +30,7 @@ import com.liferay.gradle.plugins.defaults.internal.LiferayRelengPlugin;
 import com.liferay.gradle.plugins.defaults.internal.WhipDefaultsPlugin;
 import com.liferay.gradle.plugins.defaults.internal.util.BackupFilesBuildAdapter;
 import com.liferay.gradle.plugins.defaults.internal.util.FileUtil;
+import com.liferay.gradle.plugins.defaults.internal.util.GitRepositoryBuildAdapter;
 import com.liferay.gradle.plugins.defaults.internal.util.GitUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
@@ -330,6 +331,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		Gradle gradle = project.getGradle();
 
 		gradle.addBuildListener(_backupFilesBuildAdapter);
+		gradle.addBuildListener(_gitRepositoryBuildAdapter);
 
 		StartParameter startParameter = gradle.getStartParameter();
 
@@ -4202,10 +4204,10 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	private boolean _isSnapshotStale(Project project, long lastModifiedTime) {
 		long startTime = System.currentTimeMillis();
 
-		try (Repository repository = GitUtil.openRepository(
-				project.getRootDir());
-			Git git = Git.wrap(repository)) {
+		Repository repository = _gitRepositoryBuildAdapter.getRepository(
+			project);
 
+		try (Git git = Git.wrap(repository)) {
 			String path = GitUtil.relativize(
 				project.getProjectDir(), repository);
 
@@ -4484,6 +4486,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	private static final BackupFilesBuildAdapter _backupFilesBuildAdapter =
 		new BackupFilesBuildAdapter();
 	private static final Set<String> _copyrightedExtensions;
+	private static final GitRepositoryBuildAdapter _gitRepositoryBuildAdapter =
+		new GitRepositoryBuildAdapter();
 
 	static {
 		_copyrightedExtensions = new HashSet<>();

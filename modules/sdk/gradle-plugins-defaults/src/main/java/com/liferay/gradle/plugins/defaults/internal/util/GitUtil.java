@@ -21,12 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.RepositoryCache;
-import org.eclipse.jgit.lib.RepositoryCache.FileKey;
-import org.eclipse.jgit.util.FS;
 
 import org.gradle.api.Action;
-import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.process.ExecSpec;
 
@@ -101,12 +97,6 @@ public class GitUtil {
 		return result.trim();
 	}
 
-	public static Repository openRepository(File gitDir) throws Exception {
-		gitDir = _getGitDir(gitDir);
-
-		return RepositoryCache.open(FileKey.exact(gitDir, FS.DETECTED));
-	}
-
 	public static String relativize(File file, Repository repository) {
 		File gitDir = repository.getDirectory();
 
@@ -117,21 +107,6 @@ public class GitUtil {
 		}
 
 		return relativePath;
-	}
-
-	private static File _getGitDir(File dir) {
-		do {
-			File gitDir = FileKey.resolve(dir, FS.DETECTED);
-
-			if (gitDir != null) {
-				return gitDir;
-			}
-
-			dir = dir.getParentFile();
-		}
-		while (dir != null);
-
-		throw new GradleException("Unable to locate .git directory");
 	}
 
 }
