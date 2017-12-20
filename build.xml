@@ -30,6 +30,12 @@ message.
 		<antcall target="deploy" />
 	</target>
 
+	<target name="all-fast">
+		<antcall target="all">
+			<param name="build.deploy.if.stale" value="true" />
+		</antcall>
+	</target>
+
 	<target name="baseline-current-branch">
 		<java
 			classname="com.liferay.portal.tools.GitUtil"
@@ -202,6 +208,7 @@ message.
 		<gradle-execute dir="modules" task="deploy">
 			<arg value="--parallel" />
 			<arg value="-Dbuild.profile=portal-pre" />
+			<arg value="-PdeployIfStale=${build.deploy.if.stale}" />
 			<arg value="-Pforced.deploy.dir=${project.dir}/tmp/lib-pre" />
 		</gradle-execute>
 
@@ -345,6 +352,7 @@ message.
 				<gradle-execute dir="${project.dir}/modules" task="deploy">
 					<arg value="--parallel" />
 					<arg value="-Dbuild.profile=portal-pre" />
+					<arg value="-PdeployIfStale=${build.deploy.if.stale}" />
 				</gradle-execute>
 
 				<gradle-execute dir="${project.dir}/modules" task="deploy">
@@ -352,6 +360,7 @@ message.
 					<arg value="-Dbuild.exclude.dirs=${build.exclude.dirs}" />
 					<arg value="-Dbuild.include.dirs=${build.include.dirs}" />
 					<arg value="-Dbuild.profile=${build.profile}" />
+					<arg value="-PdeployIfStale=${build.deploy.if.stale}" />
 					<env key="WAS_HOME" value="${app.server.websphere.dir}" />
 				</gradle-execute>
 			</then>
@@ -361,6 +370,7 @@ message.
 					<arg value="-Dbuild.exclude.dirs=${build.exclude.dirs}" />
 					<arg value="-Dbuild.include.dirs=${build.include.dirs}" />
 					<arg value="-Dbuild.profile=${build.profile}" />
+					<arg value="-PdeployIfStale=${build.deploy.if.stale}" />
 				</gradle-execute>
 
 				<pathconvert property="build.app.server.lib.marker.files" setonempty="false">
@@ -375,6 +385,7 @@ message.
 							<arg value="-Dbuild.exclude.dirs=${build.exclude.dirs}" />
 							<arg value="-Dbuild.include.dirs=${build.include.dirs}" />
 							<arg value="-Dbuild.profile=${build.profile}" />
+							<arg value="-PdeployIfStale=${build.deploy.if.stale}" />
 							<arg value="deployAppServerLib" />
 							<arg value="deployAppServerPortalFile" />
 							<arg value="deployConfigs" />
@@ -386,6 +397,7 @@ message.
 							<arg value="-Dbuild.exclude.dirs=${build.exclude.dirs}" />
 							<arg value="-Dbuild.include.dirs=${build.include.dirs}" />
 							<arg value="-Dbuild.profile=${build.profile}" />
+							<arg value="-PdeployIfStale=${build.deploy.if.stale}" />
 							<arg value="deployAppServerPortalFile" />
 							<arg value="deployConfigs" />
 						</gradle-execute>
@@ -435,6 +447,7 @@ message.
 						<gradle-execute dir="${project.dir}/modules" task="deploy">
 							<arg value="--parallel" />
 							<arg value="-Dbuild.profile=ci" />
+							<arg value="-PdeployIfStale=${build.deploy.if.stale}" />
 						</gradle-execute>
 					</then>
 				</if>
