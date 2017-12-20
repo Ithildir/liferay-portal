@@ -124,6 +124,22 @@ import nebula.plugin.extraconfigurations.ProvidedBasePlugin;
 
 import org.dm.gradle.plugins.bundle.BundleExtension;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.StatusCommand;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.AndRevFilter;
+import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter;
+import org.eclipse.jgit.revwalk.filter.MaxCountRevFilter;
+import org.eclipse.jgit.revwalk.filter.MessageRevFilter;
+import org.eclipse.jgit.revwalk.filter.NotRevFilter;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
+
 import org.gradle.StartParameter;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -4184,31 +4200,55 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private boolean _isSnapshotStale(Project project, long lastModifiedTime) {
-		Logger logger = project.getLogger();
+		try (Repository repository = GitUtil.openRepository(
+				project.getRootDir());
+			Git git = Git.wrap(repository)) {
 
-		// Remove milliseconds from Unix epoch
+			String path = GitUtil.relativize(
+				project.getProjectDir(), repository);
 
-		lastModifiedTime = lastModifiedTime / 1000;
+			StatusCommand statusCommand = git.status();
 
-		String result = GitUtil.getGitResult(
-			project, "log", "--format=%s", "--since=" + lastModifiedTime, ".");
+			statusCommand.addPath(path);
 
-		String[] lines = result.split("\\r?\\n");
+			Status status = statusCommand.call();
 
-		for (String line : lines) {
-			if (logger.isInfoEnabled()) {
-				logger.info(line);
-			}
-
-			if (Validator.isNull(line)) {
-				continue;
-			}
-
-			if (!line.contains(
-					WriteArtifactPublishCommandsTask.IGNORED_MESSAGE_PATTERN)) {
-
+			if (!status.isClean()) {
 				return true;
 			}
+
+			try (RevWalk revWalk = new RevWalk(repository)) {
+				revWalk.markStart(
+					revWalk.parseCommit(
+						repository.resolve(
+							org.eclipse.jgit.lib.Constants.HEAD)));
+
+				revWalk.setRetainBody(false);
+
+				revWalk.setRevFilter(
+					AndRevFilter.create(
+						new RevFilter[] {
+							CommitTimeRevFilter.after(lastModifiedTime),
+							NotRevFilter.create(
+								MessageRevFilter.create(
+									WriteArtifactPublishCommandsTask.
+										IGNORED_MESSAGE_PATTERN)),
+							MaxCountRevFilter.create(1)
+						}));
+
+				revWalk.setTreeFilter(
+					AndTreeFilter.create(
+						PathFilter.create(path), TreeFilter.ANY_DIFF));
+
+				RevCommit revCommit = revWalk.next();
+
+				if (revCommit != null) {
+					return true;
+				}
+			}
+		}
+		catch (Exception e) {
+			throw new GradleException("Unable to get Git information", e);
 		}
 
 		return false;
