@@ -4200,6 +4200,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private boolean _isSnapshotStale(Project project, long lastModifiedTime) {
+		long startTime = System.currentTimeMillis();
+
 		try (Repository repository = GitUtil.openRepository(
 				project.getRootDir());
 			Git git = Git.wrap(repository)) {
@@ -4249,6 +4251,15 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		}
 		catch (Exception e) {
 			throw new GradleException("Unable to get Git information", e);
+		}
+		finally {
+			Logger logger = project.getLogger();
+
+			if (logger.isLifecycleEnabled()) {
+				logger.lifecycle(
+					"Snapshot staleness check for {} completed in {} ms",
+					project, System.currentTimeMillis() - startTime);
+			}
 		}
 
 		return false;
