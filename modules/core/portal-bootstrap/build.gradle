@@ -21,7 +21,7 @@ if (!System.getenv("JENKINS_HOME") || !systemPackagesExtraManifestFile.exists())
 		dependsOn copySystemPackagesExtraLibs
 
 		doLast {
-			Clock clock = new Clock()
+			long now = System.currentTimeMillis()
 
 			JarBuilder jarBuilder = bundle.jarBuilderFactory.create()
 
@@ -60,7 +60,7 @@ if (!System.getenv("JENKINS_HOME") || !systemPackagesExtraManifestFile.exists())
 				jarBuilder.writeManifestTo it
 			}
 
-			logger.lifecycle "Building the system.packages.extra.mf file took {}.", clock.time
+			logger.lifecycle "Building the system.packages.extra.mf file took {} ms.", System.currentTimeMillis() - now
 		}
 	}
 
