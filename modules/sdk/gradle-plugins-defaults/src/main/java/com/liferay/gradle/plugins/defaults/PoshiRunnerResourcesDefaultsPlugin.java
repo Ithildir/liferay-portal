@@ -38,7 +38,6 @@ import org.gradle.api.plugins.MavenRepositoryHandlerConvention;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.Upload;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
-import org.omg.stub.java.rmi._Remote_Stub;
 
 /**
  * @author Andrea Di Giorgi
