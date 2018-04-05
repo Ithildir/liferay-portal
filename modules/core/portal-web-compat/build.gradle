@@ -1,15 +1,14 @@
 apply plugin: "com.liferay.osgi.portal.compat.defaults.plugin"
 
+task deploy(overwrite: true)
+
 dependencies {
 	testCompile group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
 	testCompile project(":core:petra:petra-lang")
 }
 
 deploy {
-	deleteAllActions()
-
-	dependsOn = []
-	finalizedBy importFiles
+	dependsOn importFiles
 }
 
 importFiles {
