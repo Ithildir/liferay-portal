@@ -18,6 +18,7 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.petra.xml.Dom4jUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.xml.SAXReaderFactory;
 
 import java.io.BufferedReader;
@@ -25,11 +26,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +41,12 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
 import org.dom4j.Node;
+import org.dom4j.QName;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXReader;
 
@@ -51,6 +54,8 @@ import org.dom4j.io.SAXReader;
  * @author Brian Wing Shun Chan
  */
 public class XSLTBuilder {
+
+	private static final String _FILE_NAME_XPATH_EXPRESSION = "//file-name";
 
 	public static void main(String[] args) throws IOException {
 		if (args.length == 2) {
@@ -76,6 +81,68 @@ public class XSLTBuilder {
 		this(new String[] {xml}, xsl, html);
 	}
 
+	private Document _convertSPDXFile(String spdxFileName) throws Exception {
+		Document document = DocumentHelper.createDocument();
+
+		SAXReader saxReader = SAXReaderFactory.getSAXReader(null, false, false);
+
+		Document spdxDocument = saxReader.read(new File(spdxFileName));
+
+		Element rdfElement = spdxDocument.getRootElement();
+
+		List<Element> packageElements = rdfElement.elements("package");
+
+		for (Element packageElement : packageElements) {
+			List<Element> fileElements = packageElement.elements("file");
+
+			for (Element fileElement : fileElements) {
+				String fileName = fileElement.elementText("filename");
+
+				_getSPDXJarFileName(spdxFileName);
+			}
+		}
+
+		return document;
+	}
+
+	private String _getSPDXJarFileName(String fileName) {
+		int start = fileName.indexOf("/modules/");
+
+		if (start == -1) {
+			return null;
+		}
+
+		int end = fileName.indexOf("/src/main/");
+
+		if (end == -1) {
+			return null;
+		}
+
+		String moduleDirName = fileName.substring(start + 8, end);
+
+		System.out.println(moduleDirName);
+
+		return null;
+	}
+
+	private static final File _rootDir;
+
+	static {
+		File dir = new File(System.getProperty("user.dir"));
+
+		while (dir != null) {
+			File portalImplDir = new File(dir, "portal-impl");
+
+			if (portalImplDir.isDirectory()) {
+				break;
+			}
+
+			dir = dir.getParentFile();
+		}
+
+		_rootDir = dir;
+	}
+
 	public XSLTBuilder(String[] xmls, String xsl, String html) {
 		try {
 			System.setProperty("line.separator", StringPool.NEW_LINE);
@@ -83,7 +150,16 @@ public class XSLTBuilder {
 			String prefix = html.substring(
 				0, html.lastIndexOf(CharPool.PERIOD));
 
-			Document document = _combineAndSortXMLs(xmls, prefix + ".xsl");
+			List<Document> documents = new ArrayList<>();
+
+			String spdxFileName = System.getProperty("spdx.file");
+
+			if (Validator.isNotNull(spdxFileName)) {
+				documents.add(_convertSPDXFile(spdxFileName));
+			}
+
+			Document document = _combineAndSortXMLs(
+				xmls, documents, prefix + ".xsl");
 
 			if (xmls.length > 1) {
 				String completeXml = prefix + "-complete.xml";
@@ -110,7 +186,8 @@ public class XSLTBuilder {
 		}
 	}
 
-	private Document _combineAndSortXMLs(String[] xmls, String xsl)
+	private Document _combineAndSortXMLs(
+			String[] xmls, Iterable<Document> documents, String xsl)
 		throws Exception {
 
 		SAXReader saxReader = SAXReaderFactory.getSAXReader(null, false, false);
@@ -120,11 +197,11 @@ public class XSLTBuilder {
 		for (String xml : xmls) {
 			Document document = saxReader.read(new File(xml));
 
-			List<Node> nodes = document.selectNodes("//file-name");
+			_putElements(elementMap, document, _FILE_NAME_XPATH_EXPRESSION);
+		}
 
-			for (Node node : nodes) {
-				elementMap.put(node.getText(), node.getParent());
-			}
+		for (Document document : documents) {
+			_putElements(elementMap, document, _FILE_NAME_XPATH_EXPRESSION);
 		}
 
 		Document document = DocumentHelper.createDocument();
@@ -151,6 +228,17 @@ public class XSLTBuilder {
 		}
 
 		return document;
+	}
+
+	private void _putElements(
+		Map<String, Element> elementMap, Document document,
+		String xpathExpression) {
+
+		List<Node> nodes = document.selectNodes(xpathExpression);
+
+		for (Node node : nodes) {
+			elementMap.put(node.getText(), node.getParent());
+		}
 	}
 
 }

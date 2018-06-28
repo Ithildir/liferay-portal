@@ -169,6 +169,7 @@ svn://svn.liferay.com/repos/public/alloy/trunk/sandbox/taglibs.
 			<arg value="-Dbuild.profile=portal" />
 			<arg value="-Dlicense.report.enabled=true" />
 			<arg value="-Dlicense.report.output.dir=${project.dir}/tmp/license-reports" />
+			<arg value="-Dspdx.file=${spdx.file}" />
 		</gradle-execute>
 
 		<pathconvert pathsep="," property="modules.lib.versions.files">
